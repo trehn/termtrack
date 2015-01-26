@@ -1,5 +1,5 @@
 import curses
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import ephem
 
@@ -41,10 +41,15 @@ def draw_map(stdscr, body):
     return body
 
 
-def draw_satellite(stdscr, body, satellite):
-    for i in range(1):
-        x, y = body.from_latlon(*satellite.latlon(plus_minutes=i))
-        stdscr.addstr(y, x, "#", curses.color_pair(4))
+def draw_satellite(stdscr, body, satellite, orbits=0):
+    orbit_offset = timedelta()
+    while orbit_offset < satellite.orbital_period * orbits:
+        orbit_offset += satellite.orbital_period / 100
+        x, y = body.from_latlon(*satellite.latlon(plus_seconds=orbit_offset.total_seconds()))
+        stdscr.addstr(y, x, "+", curses.color_pair(4))
+
+    x, y = body.from_latlon(*satellite.latlon())
+    stdscr.addstr(y, x, "#", curses.color_pair(4))
 
 
 def draw_location(stdscr, body, lat, lon):

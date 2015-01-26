@@ -18,6 +18,8 @@ def render(
         stdscr,
         fps=1,
         no_you=False,
+        orbits=0,
+        satellite=None,
         **kwargs
     ):
     curses_lock, input_queue, quit_event = setup(stdscr)
@@ -28,12 +30,14 @@ def render(
     input_thread.start()
     try:
         body = Earth(1, 1)
-        iss = EarthSatellite(25544)
+        if satellite is not None:
+            satellite_obj = EarthSatellite(satellite)
         while True:
             with curses_lock:
                 stdscr.erase()
                 body = draw_map(stdscr, body)
-                draw_satellite(stdscr, body, iss)
+                if satellite is not None:
+                    draw_satellite(stdscr, body, satellite_obj, orbits=orbits)
                 if not no_you:
                     location_data = get("http://ip-api.com/json").json()
                     draw_location(stdscr, body, location_data['lat'], location_data['lon'])
@@ -58,9 +62,19 @@ def print_version(ctx, param, value):
 @click.command()
 @click.option("-f", "--fps", default=1, metavar="N",
               help="Frames per second (defaults to 1)")
-@click.option("-Y", "--no-you", is_flag=True, default=False)
+@click.option("-o", "--orbits", default=0, metavar="N",
+              help="Draw this many orbits ahead of the satellite")
+@click.option("-Y", "--no-you", is_flag=True, default=False,
+              help="Don't draw your location")
 @click.option("--version", is_flag=True, callback=print_version,
               expose_value=False, is_eager=True,
               help="Show version and exit")
+@click.argument('satellite', required=False)
 def main(**kwargs):
+    """
+    \b
+    Shows a world map tracking SATELLITE. Valid values for SATELLITE are
+    numbers from http://www.celestrak.com/NORAD/elements/master.asp (for
+    your convenience, "iss" or "tiangong" are also allowed).
+    """
     curses.wrapper(render, **kwargs)
