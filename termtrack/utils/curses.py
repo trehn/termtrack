@@ -10,10 +10,10 @@ INPUT_EXIT = 1
 def setup(stdscr):
     # curses
     curses.use_default_colors()
-    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.start_color()
+    curses.use_default_colors()
+    for i in range(0, curses.COLORS):
+        curses.init_pair(i + 1, i, -1)
     curses.curs_set(False)
     stdscr.timeout(0)
 
