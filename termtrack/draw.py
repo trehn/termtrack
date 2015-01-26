@@ -31,7 +31,7 @@ def draw_map(stdscr, body):
             obs.lon = "{:.8f}".format(lon)
             sun.compute(obs)
             if sun.alt > 0:
-                color = 47
+                color = 48
             elif sun.alt > -0.05:
                 color = 37
             elif sun.alt > -0.1:
@@ -52,10 +52,10 @@ def draw_satellite(stdscr, body, satellite, orbits=0):
     while orbit_offset < satellite.orbital_period * orbits:
         orbit_offset += satellite.orbital_period / 100
         x, y = body.from_latlon(*satellite.latlon(plus_seconds=orbit_offset.total_seconds()))
-        stdscr.addstr(y, x, "+", curses.color_pair(4))
+        stdscr.addstr(y, x, "•", curses.color_pair(167))
 
     x, y = body.from_latlon(*satellite.latlon())
-    stdscr.addstr(y, x, "#", curses.color_pair(16))
+    stdscr.addstr(y, x, "X", curses.color_pair(16))
 
 
 def draw_location(stdscr, body, lat, lon):
