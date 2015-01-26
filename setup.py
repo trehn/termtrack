@@ -10,7 +10,7 @@ setup(
     url="https://github.com/trehn/termtrack",
     keywords=["terminal", "track", "tracking", "satellite", "orbit", "iss"],
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Environment :: Console :: Curses",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Natural Language :: English",

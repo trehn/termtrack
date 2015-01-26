@@ -1,4 +1,6 @@
 0.1.0
 =====
 
-unreleased
+2015-01-26
+
+* initial release
