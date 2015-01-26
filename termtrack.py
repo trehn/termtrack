@@ -137,9 +137,7 @@ def log(msg):
         f.write(msg)
 
 
-def draw(stdscr, body, satellites=None):
-    if satellites is None:
-        satellites = []
+def draw_map(stdscr, body):
     start = datetime.now()
     height, width = stdscr.getmaxyx()
     if body.height != height or body.width != width:
@@ -170,18 +168,18 @@ def draw(stdscr, body, satellites=None):
                 stdscr.addstr(y, x, "•", curses.color_pair(color))
             else:
                 stdscr.addstr(y, x, " ", curses.color_pair(color))
-
-    # ISS
-    iss = satellites[0]
-    for i in range(270):
-        stdscr.addstr(y, x, "#", curses.color_pair(4))
-        x, y = body.from_latlon(*iss.latlon(plus_minutes=i))
-
-    # FRA
-    x, y = body.from_latlon(50, 8)
-    stdscr.addstr(y, x, "•", curses.color_pair(3))
-
     return body
+
+
+def draw_satellite(stdscr, body, satellite):
+    for i in range(270):
+        x, y = body.from_latlon(*satellite.latlon(plus_minutes=i))
+        stdscr.addstr(y, x, "#", curses.color_pair(4))
+
+
+def draw_location(stdscr, body, lat, lon):
+    x, y = body.from_latlon(lat, lon)
+    stdscr.addstr(y, x, "•", curses.color_pair(3))
 
 
 def setup(stdscr):
@@ -250,7 +248,8 @@ def render(
         while True:
             with curses_lock:
                 stdscr.erase()
-                body = draw(stdscr, body, satellites=[iss])
+                body = draw_map(stdscr, body)
+                draw_satellite(stdscr, body, iss)
             try:
                 input_action = input_queue.get(True, 1/fps)
             except Empty:
