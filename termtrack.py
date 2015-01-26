@@ -234,6 +234,7 @@ def print_version(ctx, param, value):
 def render(
         stdscr,
         fps=1,
+        no_you=False,
         **kwargs
     ):
     curses_lock, input_queue, quit_event = setup(stdscr)
@@ -250,6 +251,9 @@ def render(
                 stdscr.erase()
                 body = draw_map(stdscr, body)
                 draw_satellite(stdscr, body, iss)
+                if not no_you:
+                    location_data = requests.get("http://ip-api.com/json").json()
+                    draw_location(stdscr, body, location_data['lat'], location_data['lon'])
             try:
                 input_action = input_queue.get(True, 1/fps)
             except Empty:
@@ -264,6 +268,7 @@ def render(
 @click.command()
 @click.option("-f", "--fps", default=1, metavar="N",
               help="Frames per second (defaults to 1)")
+@click.option("-Y", "--no-you", is_flag=True, default=False)
 @click.option("--version", is_flag=True, callback=print_version,
               expose_value=False, is_eager=True,
               help="Show version and exit")
