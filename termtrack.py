@@ -73,18 +73,18 @@ class Body(object):
             for x in range(self.width-1):
                 for y in range(self.height):
                     yield progress
-                    x_lat, y_lon = self.to_latlon(x, y)
+                    lat, lon = self.to_latlon(x, y)
                     land = False
                     for shape in self._sf.shapes():
                         if (
                             # for performance reasons we quickly check the
                             # bounding box before trying the more expensive
                             # point_in_poly() call
-                            x_lat > shape.bbox[0] and
-                            x_lat < shape.bbox[2] and
-                            y_lon > shape.bbox[1] and
-                            y_lon < shape.bbox[3]
-                        ) and point_in_poly(x_lat, y_lon, shape.points):
+                            lat > shape.bbox[1] and
+                            lat < shape.bbox[3] and
+                            lon > shape.bbox[0] and
+                            lon < shape.bbox[2]
+                        ) and point_in_poly(lon, lat, shape.points):
                             land = True
                             break
                     if land:
