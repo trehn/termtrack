@@ -3,6 +3,46 @@ from datetime import datetime, timedelta
 
 import ephem
 
+from .utils.text import format_seconds
+
+
+def draw_info(stdscr, satellite, right=True):
+    height, width = stdscr.getmaxyx()
+    lat, lon = satellite.latlon()
+    text = []
+    text.append(satellite.name)
+    text.append("")
+    text.append("Latitude:")
+    text.append("  {:.6f}".format(lat))
+    text.append("")
+    text.append("Longitude:")
+    text.append("  {:.6f}".format(lon))
+    text.append("")
+    text.append("Inclination:")
+    text.append("  {:.4f}°".format(satellite.inclination))
+    text.append("")
+    text.append("Orbital period:")
+    text.append("  " + format_seconds(satellite.orbital_period.total_seconds()))
+
+    longest_line = max(map(len, text))
+
+    padded_lines = []
+    for line in text:
+        padded_lines.append("┃ " + line.ljust(longest_line+1) + "┃")
+    padded_lines.insert(0, "╭" + "─" * (longest_line+2) + "╮")
+    padded_lines.append("╰" + "─" * (longest_line+2) + "╯")
+
+    if right:
+        x = width - len(padded_lines[0]) - 2
+    else:
+        x = 2
+    y = 1
+
+    if len(padded_lines)+1 <= height and len(padded_lines[0]) + 2 <= width:
+        for line in padded_lines:
+            stdscr.addstr(y, x, line)
+            y += 1
+
 
 def draw_map(stdscr, body):
     start = datetime.now()

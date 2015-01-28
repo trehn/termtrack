@@ -20,6 +20,7 @@ class EarthSatellite(object):
         number = ALIASES.get(number, number)
         raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
         tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
+        self.inclination = float(tle[2][8:16])
         self.name = tle[0].strip()
         self.orbital_period = SIDEREAL_DAY / float(tle[2][52:63])
         self._satellite = ephem.readtle(*tle)

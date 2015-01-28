@@ -20,6 +20,10 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  numbers from http://www.celestrak.com/NORAD/elements/master.asp (for
 	  your convenience, "iss" or "tiangong" are also allowed).
 
+	  Hotkeys:
+	      i       Toggle info panel (capital i for left side)
+	      Q       Quit
+
 	Options:
 	  -f, --fps N     Frames per second (defaults to 1)
 	  -o, --orbits N  Draw this many orbits ahead of the satellite
