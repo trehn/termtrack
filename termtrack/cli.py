@@ -7,7 +7,7 @@ from requests import get
 
 from . import VERSION_STRING
 from .body import Earth
-from .draw import draw_info, draw_location, draw_map, draw_satellite
+from .draw import draw_info, draw_location, draw_map, draw_satellite, draw_satellite_crosshair
 from .satellite import EarthSatellite
 from .utils.curses import graceful_ctrlc, input_thread_body, setup
 from .utils.curses import (
@@ -20,6 +20,7 @@ from .utils.curses import (
 @graceful_ctrlc
 def render(
         stdscr,
+        crosshair=False,
         fps=1,
         no_you=False,
         orbits=0,
@@ -43,6 +44,8 @@ def render(
                 stdscr.erase()
                 body = draw_map(stdscr, body)
                 if satellite is not None:
+                    if crosshair:
+                        draw_satellite_crosshair(stdscr, body, satellite_obj)
                     draw_satellite(stdscr, body, satellite_obj, orbits=orbits)
                 if not no_you:
                     location_data = get("http://ip-api.com/json").json()
@@ -76,6 +79,8 @@ def print_version(ctx, param, value):
 
 
 @click.command()
+@click.option("-c", "--crosshair", is_flag=True, default=False,
+              help="Draw crosshair around satellite location")
 @click.option("-f", "--fps", default=1, metavar="N",
               help="Frames per second (defaults to 1)")
 @click.option("-o", "--orbits", default=0, metavar="N",

@@ -105,6 +105,20 @@ def draw_satellite(stdscr, body, satellite, orbits=0):
     except ValueError:
         pass
 
+
+def draw_satellite_crosshair(stdscr, body, satellite):
+    try:
+        x, y = body.from_latlon(*satellite.latlon())
+    except ValueError:
+        return
+    for i in range(body.width-1):
+        if not body.map[i][y]:
+            stdscr.addstr(y, i, "─", curses.color_pair(235))
+    for i in range(body.height):
+        if not body.map[x][i]:
+            stdscr.addstr(i, x, "|", curses.color_pair(235))
+
+
 def draw_location(stdscr, body, lat, lon):
     x, y = body.from_latlon(lat, lon)
     stdscr.addstr(y, x, "•", curses.color_pair(2))
