@@ -31,7 +31,7 @@ class Body(object):
         yrel = (self.LAT_MAX - lat) / self.lat_range
         x = int(round(self.width * xrel))
         y = int(round(self.height * yrel))
-        return min(x, self.width-1), min(y, self.height)
+        return min(x, self.width-1), min(y, self.height-1)
 
     def prepare_map(self):
         map_cache = shelve.open(expanduser(MAP_CACHE))
