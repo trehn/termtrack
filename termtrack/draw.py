@@ -50,13 +50,20 @@ def draw_map(stdscr, body):
 def draw_satellite(stdscr, body, satellite, orbits=0):
     orbit_offset = timedelta()
     while orbit_offset < satellite.orbital_period * orbits:
-        orbit_offset += satellite.orbital_period / 100
-        x, y = body.from_latlon(*satellite.latlon(plus_seconds=orbit_offset.total_seconds()))
-        stdscr.addstr(y, x, "•", curses.color_pair(167))
+        orbit_offset += satellite.orbital_period / 80
+        try:
+            x, y = body.from_latlon(*satellite.latlon(plus_seconds=orbit_offset.total_seconds()))
+            stdscr.addstr(y, x, "•", curses.color_pair(167))
+        except ValueError:
+            pass
+        except:
+            raise ValueError("{}x{} {}".format(x, y, stdscr.getmaxyx()))
 
-    x, y = body.from_latlon(*satellite.latlon())
-    stdscr.addstr(y, x, "X", curses.color_pair(16))
-
+    try:
+        x, y = body.from_latlon(*satellite.latlon())
+        stdscr.addstr(y, x, "X", curses.color_pair(16))
+    except ValueError:
+        pass
 
 def draw_location(stdscr, body, lat, lon):
     x, y = body.from_latlon(lat, lon)
