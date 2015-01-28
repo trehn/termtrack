@@ -12,6 +12,7 @@ ALIASES = {
     'tiangong': 37820,
 }
 TLE_REGEX = re.compile("PRE>(.*)</PRE", flags=re.DOTALL)
+SIDEREAL_DAY = timedelta(seconds=86164.0916)
 
 
 class EarthSatellite(object):
@@ -20,7 +21,7 @@ class EarthSatellite(object):
         raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
         tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
         self.name = tle[0].strip()
-        self.orbital_period = timedelta(days=1) / float(tle[2][52:63])
+        self.orbital_period = SIDEREAL_DAY / float(tle[2][52:63])
         self._satellite = ephem.readtle(*tle)
 
     def latlon(self, plus_seconds=0):
