@@ -37,6 +37,8 @@ def render(
         body = Earth(1, 1)
         if satellite is not None:
             satellite_obj = EarthSatellite(satellite)
+        if not no_you:
+            location_data = get("http://ip-api.com/json").json()
         info_right = False
         info_left = False
         while True:
@@ -49,7 +51,6 @@ def render(
                         draw_satellite_crosshair(stdscr, body, satellite_obj)
                     draw_satellite(stdscr, body, satellite_obj, orbits=orbits)
                 if not no_you:
-                    location_data = get("http://ip-api.com/json").json()
                     draw_location(stdscr, body, location_data['lat'], location_data['lon'])
                 if info_right and satellite is not None:
                     draw_info(stdscr, satellite_obj, right=True)
