@@ -20,6 +20,7 @@ from .utils.curses import (
 @graceful_ctrlc
 def render(
         stdscr,
+        apsides=False,
         crosshair=False,
         fps=1,
         no_you=False,
@@ -49,7 +50,7 @@ def render(
                     satellite_obj.compute()
                     if crosshair:
                         draw_satellite_crosshair(stdscr, body, satellite_obj)
-                    draw_satellite(stdscr, body, satellite_obj, orbits=orbits)
+                    draw_satellite(stdscr, body, satellite_obj, apsides=apsides, orbits=orbits)
                 if not no_you:
                     draw_location(stdscr, body, location_data['lat'], location_data['lon'])
                 if info_right and satellite is not None:
@@ -81,6 +82,8 @@ def print_version(ctx, param, value):
 
 
 @click.command()
+@click.option("--apsides", is_flag=True, default=False,
+              help="Draw apoapsis and periapsis markers")
 @click.option("-c", "--crosshair", is_flag=True, default=False,
               help="Draw crosshair around satellite location")
 @click.option("-f", "--fps", default=1, metavar="N",

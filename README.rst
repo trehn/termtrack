@@ -25,11 +25,13 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	      Q       Quit
 
 	Options:
-	  -f, --fps N     Frames per second (defaults to 1)
-	  -o, --orbits N  Draw this many orbits ahead of the satellite
-	  -Y, --no-you    Don't draw your location
-	  --version       Show version and exit
-	  --help          Show this message and exit
+	  --apsides        Draw apoapsis and periapsis markers
+	  -c, --crosshair  Draw crosshair around satellite location
+	  -f, --fps N      Frames per second (defaults to 1)
+	  -o, --orbits N   Draw this many orbits ahead of the satellite
+	  -Y, --no-you     Don't draw your location
+	  --version        Show version and exit
+	  --help           Show this message and exit
 
 Credit goes to `vain/asciiworld <https://github.com/vain/asciiworld>`_ for inspiration.
 

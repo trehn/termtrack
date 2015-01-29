@@ -89,7 +89,7 @@ def draw_map(stdscr, body):
     return body
 
 
-def draw_satellite(stdscr, body, satellite, orbits=0):
+def draw_satellite(stdscr, body, satellite, apsides=False, orbits=0):
     orbit_offset = timedelta()
     while orbit_offset < satellite.orbital_period * orbits:
         orbit_offset += satellite.orbital_period / 80
@@ -104,6 +104,18 @@ def draw_satellite(stdscr, body, satellite, orbits=0):
 
     # reset values to current
     satellite.compute()
+
+    if apsides:
+        try:
+            x, y = body.from_latlon(satellite.apoapsis_latitude, satellite.apoapsis_longitude)
+            stdscr.addstr(y, x, "A", curses.color_pair(167))
+        except ValueError:
+            pass
+        try:
+            x, y = body.from_latlon(satellite.periapsis_latitude, satellite.periapsis_longitude)
+            stdscr.addstr(y, x, "P", curses.color_pair(167))
+        except ValueError:
+            pass
 
     try:
         x, y = body.from_latlon(satellite.latitude, satellite.longitude)
