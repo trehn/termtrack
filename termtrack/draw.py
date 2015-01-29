@@ -3,24 +3,24 @@ from datetime import datetime, timedelta
 
 import ephem
 
+from .utils.geometry import rad_to_deg
 from .utils.text import format_seconds
 
 
 def draw_info(stdscr, satellite, right=True):
     height, width = stdscr.getmaxyx()
-    lat, lon = satellite.latlon()
     width -= 1
     text = []
     text.append(satellite.name)
     text.append("")
     text.append("Latitude:")
-    text.append("  {:.6f}".format(lat))
+    text.append("  {:.6f}".format(satellite.latitude))
     text.append("")
     text.append("Longitude:")
-    text.append("  {:.6f}".format(lon))
+    text.append("  {:.6f}".format(satellite.longitude))
     text.append("")
     text.append("Inclination:")
-    text.append("  {:.4f}°".format(satellite.inclination))
+    text.append("  {:.4f}°".format(rad_to_deg(satellite.inclination)))
     text.append("")
     text.append("Orbital period:")
     text.append("  " + format_seconds(satellite.orbital_period.total_seconds()))
@@ -93,16 +93,20 @@ def draw_satellite(stdscr, body, satellite, orbits=0):
     orbit_offset = timedelta()
     while orbit_offset < satellite.orbital_period * orbits:
         orbit_offset += satellite.orbital_period / 80
+        satellite.compute(plus_seconds=orbit_offset.total_seconds())
         try:
-            x, y = body.from_latlon(*satellite.latlon(plus_seconds=orbit_offset.total_seconds()))
+            x, y = body.from_latlon(satellite.latitude, satellite.longitude)
             stdscr.addstr(y, x, "•", curses.color_pair(167))
         except ValueError:
             pass
         except:
             raise ValueError("{}x{} {}".format(x, y, stdscr.getmaxyx()))
 
+    # reset values to current
+    satellite.compute()
+
     try:
-        x, y = body.from_latlon(*satellite.latlon())
+        x, y = body.from_latlon(satellite.latitude, satellite.longitude)
         stdscr.addstr(y, x, "X", curses.color_pair(16))
     except ValueError:
         pass
@@ -110,7 +114,7 @@ def draw_satellite(stdscr, body, satellite, orbits=0):
 
 def draw_satellite_crosshair(stdscr, body, satellite):
     try:
-        x, y = body.from_latlon(*satellite.latlon())
+        x, y = body.from_latlon(satellite.latitude, satellite.longitude)
     except ValueError:
         return
     for i in range(body.width-1):

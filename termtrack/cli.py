@@ -44,6 +44,7 @@ def render(
                 stdscr.erase()
                 body = draw_map(stdscr, body)
                 if satellite is not None:
+                    satellite_obj.compute()
                     if crosshair:
                         draw_satellite_crosshair(stdscr, body, satellite_obj)
                     draw_satellite(stdscr, body, satellite_obj, orbits=orbits)
