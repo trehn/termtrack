@@ -9,6 +9,7 @@ from .utils.text import format_seconds
 def draw_info(stdscr, satellite, right=True):
     height, width = stdscr.getmaxyx()
     lat, lon = satellite.latlon()
+    width -= 1
     text = []
     text.append(satellite.name)
     text.append("")
@@ -47,6 +48,7 @@ def draw_info(stdscr, satellite, right=True):
 def draw_map(stdscr, body):
     start = datetime.now()
     height, width = stdscr.getmaxyx()
+    width -= 1
     if body.height != height or body.width != width:
         body = body.__class__(width, height)
         progress_str = "0.0"
@@ -61,7 +63,7 @@ def draw_map(stdscr, body):
                     progress_str,
                 ))
                 stdscr.refresh()
-    for x in range(width-1):
+    for x in range(width):
         for y in range(height):
             sun = ephem.Sun()
             obs = ephem.Observer()

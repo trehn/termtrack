@@ -29,9 +29,9 @@ class Body(object):
             raise ValueError()
         xrel = (lon - self.LON_MIN) / self.lon_range
         yrel = (self.LAT_MAX - lat) / self.lat_range
-        x = int(round(self.width * xrel))
-        y = int(round(self.height * yrel))
-        return min(x, self.width-1), min(y, self.height-1)
+        x = int(round((self.width - 1) * xrel))
+        y = int(round((self.height - 1) * yrel))
+        return min(x, self.width - 1), min(y, self.height - 1)
 
     def prepare_map(self):
         map_cache = shelve.open(expanduser(MAP_CACHE))
@@ -42,8 +42,8 @@ class Body(object):
                 raise StopIteration()
             progress = 0.0
             empty_line = [None for i in range(self.height)]
-            self.map = [copy(empty_line) for i in range(self.width-1)]
-            for x in range(self.width-1):
+            self.map = [copy(empty_line) for i in range(self.width)]
+            for x in range(self.width):
                 for y in range(self.height):
                     yield progress
                     lat, lon = self.to_latlon(x, y)
@@ -71,8 +71,8 @@ class Body(object):
             map_cache.close()
 
     def to_latlon(self, x, y):
-        xrel = x / self.width
-        yrel = y / self.height
+        xrel = x / (self.width - 1)
+        yrel = y / (self.height - 1)
         return (
             self.LAT_MAX - yrel * self.lat_range,
             self.LON_MIN + xrel * self.lon_range,
