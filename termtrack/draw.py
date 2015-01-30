@@ -99,8 +99,6 @@ def draw_satellite(stdscr, body, satellite, apsides=False, orbits=0):
             stdscr.addstr(y, x, "•", curses.color_pair(167))
         except ValueError:
             pass
-        except:
-            raise ValueError("{}x{} {}".format(x, y, stdscr.getmaxyx()))
 
     # reset values to current
     satellite.compute()
