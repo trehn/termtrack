@@ -21,17 +21,19 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  your convenience, "iss" or "tiangong" are also allowed).
 
 	  Hotkeys:
-	      i       Toggle info panel (capital i for left side)
-	      Q       Quit
+	      i       Toggle info panels
+	      q       Quit
 
 	Options:
-	  --apsides        Draw apoapsis and periapsis markers
-	  -c, --crosshair  Draw crosshair around satellite location
-	  -f, --fps N      Frames per second (defaults to 1)
-	  -o, --orbits N   Draw this many orbits ahead of the satellite
-	  -Y, --no-you     Don't draw your location
-	  --version        Show version and exit
-	  --help           Show this message and exit
+	  --apsides                 Draw apoapsis and periapsis markers
+	  -c, --crosshair           Draw crosshair around satellite location
+	  -f, --fps N               Frames per second (defaults to 1)
+	  -o, --orbits N            Draw this many orbits ahead of the satellite
+	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
+	                            observer; overrides IP-geolocation
+	  -Y, --no-you              Don't auto-detect your location as observer
+	  --version                 Show version and exit
+	  --help                    Show this message and exit
 
 Credit goes to `vain/asciiworld <https://github.com/vain/asciiworld>`_ for inspiration.
 

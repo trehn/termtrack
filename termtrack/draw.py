@@ -7,41 +7,124 @@ import ephem
 from .utils.text import format_seconds
 
 
-def draw_info(stdscr, satellite, right=True):
+class InfoPanel(list):
+    pass
+
+
+def draw_info(stdscr, satellite):
     height, width = stdscr.getmaxyx()
     width -= 1
-    text = []
-    text.append(satellite.name)
-    text.append("")
-    text.append("Latitude:")
-    text.append("  {:.6f}".format(satellite.latitude))
-    text.append("")
-    text.append("Longitude:")
-    text.append("  {:.6f}".format(satellite.longitude))
-    text.append("")
-    text.append("Inclination:")
-    text.append("  {:.4f}°".format(rad_to_deg(satellite.inclination)))
-    text.append("")
-    text.append("Orbital period:")
-    text.append("  " + format_seconds(satellite.orbital_period.total_seconds()))
+    text_basic = InfoPanel()
+    text_basic.append(satellite.name)
+    text_basic.append("")
+    text_basic.append("Latitude:")
+    text_basic.append("  {:.6f}°".format(satellite.latitude))
+    text_basic.append("")
+    text_basic.append("Longitude:")
+    text_basic.append("  {:.6f}°".format(satellite.longitude))
+    text_basic.append("")
+    text_basic.append("Altitude:")
+    text_basic.append("  {:,.2f}km".format(satellite.altitude / 1000))
+    text_basic.append("")
+    text_basic.append("Velocity:")
+    text_basic.append("  {:,.2f}m/s".format(satellite.velocity))
+    text_basic.append("")
+    text_basic.append("Orbital period:")
+    text_basic.append("  " + format_seconds(satellite.orbital_period.total_seconds()))
+    text_basic.top = True
+    text_basic.left = True
 
-    longest_line = max(map(len, text))
+    text_apsides = InfoPanel()
+    text_apsides.append("Apogee altitude:")
+    text_apsides.append("  {:,.2f}km".format(satellite.apoapsis_altitude / 1000))
+    text_apsides.append("")
+    text_apsides.append("Perigee altitude:")
+    text_apsides.append("  {:,.2f}km".format(satellite.periapsis_altitude / 1000))
+    text_apsides.append("")
+    text_apsides.append("Time to perigee:")
+    text_apsides.append("  " + format_seconds(satellite.time_to_periapsis.total_seconds()))
+    text_apsides.append("")
+    text_apsides.append("Time since perigee:")
+    text_apsides.append("  " + format_seconds(satellite.time_since_periapsis.total_seconds()))
+    text_apsides.append("")
+    text_apsides.append("Time to apogee:")
+    text_apsides.append("  " + format_seconds(satellite.time_to_apoapsis.total_seconds()))
+    text_apsides.append("")
+    text_apsides.append("Time since apogee:")
+    text_apsides.append("  " + format_seconds(satellite.time_since_apoapsis.total_seconds()))
+    text_apsides.top = True
+    text_apsides.left = False
 
-    padded_lines = []
-    for line in text:
-        padded_lines.append("┃ " + line.ljust(longest_line+1) + "┃")
-    padded_lines.insert(0, "╭" + "─" * (longest_line+2) + "╮")
-    padded_lines.append("╰" + "─" * (longest_line+2) + "╯")
+    text_params = InfoPanel()
+    text_params.append("Inclination:")
+    text_params.append("  {:.4f}°".format(degrees(satellite.inclination)))
+    text_params.append("")
+    text_params.append("RA of asc node:")
+    text_params.append("  {:.4f}°".format(degrees(satellite.right_ascension_of_ascending_node)))
+    text_params.append("")
+    text_params.append("Arg of periapsis:")
+    text_params.append("  {:.4f}°".format(degrees(satellite.argument_of_periapsis)))
+    text_params.append("")
+    text_params.append("Eccentricity:")
+    text_params.append("  {:.7f}".format(satellite.eccentricity))
+    text_params.append("")
+    text_params.append("Semi-major axis:")
+    text_params.append("  {:,.2f}km".format(satellite.semi_major_axis / 1000))
+    text_params.append("")
+    text_params.append("Mean anomaly @epoch:")
+    text_params.append("  {:.4f}°".format(degrees(satellite.mean_anomaly_at_epoch)))
+    text_params.append("")
+    text_params.append("Epoch:")
+    text_params.append(satellite.epoch.strftime("  %Y-%m-%d %H:%M:%S"))
+    text_params.top = False
+    text_params.left = True
 
-    if right:
-        x = width - len(padded_lines[0]) - 2
-    else:
-        x = 2
-    y = 1
+    panels = [text_params, text_apsides, text_basic]
 
-    if len(padded_lines)+1 <= height and len(padded_lines[0]) + 2 <= width:
-        for line in padded_lines:
-            stdscr.addstr(y, x, line)
+    if satellite.observer_latitude is not None and satellite.observer_longitude is not None:
+        text_observer = InfoPanel()
+        text_observer.append("Observer")
+        text_observer.append("")
+        text_observer.append("Latitude:")
+        text_observer.append("  {:.6f}°".format(satellite.observer_latitude))
+        text_observer.append("")
+        text_observer.append("Longitude:")
+        text_observer.append("  {:.6f}°".format(satellite.observer_longitude))
+        text_observer.append("")
+        text_observer.append("Azimuth:")
+        text_observer.append("  {:.2f}°".format(degrees(satellite.observer_azimuth)))
+        text_observer.append("")
+        text_observer.append("Altitude:")
+        text_observer.append("  {:.2f}°".format(degrees(satellite.observer_altitude)))
+        text_observer.top = False
+        text_observer.left = False
+        panels.append(text_observer)
+
+    for text in panels:
+        longest_line = max(map(len, text))
+
+        text.padded_lines = []
+        for line in text:
+            text.padded_lines.append("┃ " + line.ljust(longest_line+1) + "┃")
+        text.padded_lines.insert(0, "╭" + "─" * (longest_line+2) + "╮")
+        text.padded_lines.append("╰" + "─" * (longest_line+2) + "╯")
+
+        if text.left:
+            text.x = 2
+        else:
+            text.x = width - len(text.padded_lines[0]) - 1
+        if text.top:
+            text.y = 1
+        else:
+            text.y = height - len(text.padded_lines) - 1
+
+        y = text.y
+        for line in text.padded_lines:
+            try:
+                stdscr.addstr(y, text.x, line)
+            except curses.error:
+                # ignore attempt to draw outside screen
+                pass
             y += 1
 
 

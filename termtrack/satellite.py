@@ -59,7 +59,7 @@ def orbital_velocity(semi_major_axis, altitude, latitude):
 
 
 class EarthSatellite(object):
-    def __init__(self, number):
+    def __init__(self, number, observer_latitude=0, observer_longitude=0, observer_elevation=0):
         number = ALIASES.get(number, number)
         raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
         tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
@@ -71,6 +71,9 @@ class EarthSatellite(object):
         self.mean_anomaly_at_epoch = float(self._satellite._M.norm)
         self.mean_motion_revs_per_day = self._satellite._n
         self.name = tle[0].strip()
+        self.observer_elevation = observer_elevation
+        self.observer_latitude = observer_latitude
+        self.observer_longitude = observer_longitude
         self.orbital_period = timedelta(days=1) / self.mean_motion_revs_per_day
         self.mean_motion = 2 * pi / self.orbital_period.total_seconds()
         self.apoapsis_latitude = degrees(asin(
@@ -79,6 +82,7 @@ class EarthSatellite(object):
         self.periapsis_latitude = degrees(asin(
             sin(self.argument_of_periapsis) * sin(self.inclination)
         ))
+        self.right_ascension_of_ascending_node = float(self._satellite._raan.norm)
         self.semi_major_axis = semi_major_axis(self.mean_motion)
         self.apoapsis_altitude = self.semi_major_axis * (1 + self.eccentricity) - earth_radius_at_latitude(self.apoapsis_latitude)
         self.periapsis_altitude = self.semi_major_axis * (1 - self.eccentricity) - earth_radius_at_latitude(self.periapsis_latitude)
@@ -115,3 +119,13 @@ class EarthSatellite(object):
         self._satellite.compute(target_time + self.time_to_apoapsis)
         self.apoapsis_latitude = degrees(self._satellite.sublat)
         self.apoapsis_longitude = degrees(self._satellite.sublong)
+
+        if self.observer_latitude is not None and self.observer_longitude is not None and plus_seconds == 0:
+            observer = ephem.Observer()
+            observer.elevation = self.observer_elevation
+            observer.lat = str(self.observer_latitude)
+            observer.lon = str(self.observer_longitude)
+            self._satellite.compute()
+            self._satellite.compute(observer)
+            self.observer_azimuth = float(self._satellite.az.norm)
+            self.observer_altitude = float(self._satellite.alt.znorm)

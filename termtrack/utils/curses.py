@@ -5,8 +5,7 @@ from time import sleep
 
 
 INPUT_EXIT = 1
-INPUT_TOGGLE_INFO_RIGHT = 2
-INPUT_TOGGLE_INFO_LEFT = 3
+INPUT_TOGGLE_INFO = 2
 
 
 def setup(stdscr):
@@ -48,7 +47,5 @@ def input_thread_body(stdscr, input_queue, quit_event, curses_lock):
         if key in ("q", "Q"):
             input_queue.put(INPUT_EXIT)
         elif key == "i":
-            input_queue.put(INPUT_TOGGLE_INFO_RIGHT)
-        elif key == "I":
-            input_queue.put(INPUT_TOGGLE_INFO_LEFT)
+            input_queue.put(INPUT_TOGGLE_INFO)
         sleep(0.01)
