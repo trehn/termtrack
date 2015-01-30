@@ -58,6 +58,7 @@ def draw_map(stdscr, body):
                 progress_str = "{:.2f}".format(progress)
                 elapsed_time = datetime.now() - start
                 eta = (elapsed_time / max(progress, 0.01)) * (100 - progress)
+                stdscr.erase()
                 stdscr.addstr(0, 0, "Rendering map (ETA {}s, {}%)...".format(
                     int(eta.total_seconds()),
                     progress_str,
