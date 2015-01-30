@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
-from math import asin, atan2, cos, pi, sin, sqrt
+from math import asin, atan2, cos, degrees, pi, radians, sin, sqrt
 import re
 
 import ephem
 from requests import get
-
-from .utils.geometry import deg_to_rad, rad_to_deg
 
 
 ALIASES = {
@@ -20,7 +18,7 @@ KEPLER_ACCURACY = 1e-6
 
 
 def earth_radius_at_latitude(latitude):
-    latitude = deg_to_rad(abs(latitude))
+    latitude = radians(abs(latitude))
     return EARTH_RADIUS * sqrt(
         1 -
         (2 * EARTH_FLATTENING_COEFFICIENT -
@@ -66,19 +64,19 @@ class EarthSatellite(object):
         raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
         tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
         self._satellite = ephem.readtle(*tle)
-        self.argument_of_periapsis = deg_to_rad(float(tle[2][34:42]))
-        self.eccentricity = float("0." + tle[2][26:33])
-        self.epoch = epoch(tle[1][18:20], tle[1][20:32])
-        self.inclination = deg_to_rad(float(tle[2][8:16]))
-        self.mean_anomaly_at_epoch = deg_to_rad(float(tle[2][43:51]))
-        self.mean_motion_revs_per_day = float(tle[2][52:63])
+        self.argument_of_periapsis = float(self._satellite._ap.norm)
+        self.eccentricity = self._satellite._e
+        self.epoch = self._satellite._epoch.datetime()
+        self.inclination = float(self._satellite._inc.norm)
+        self.mean_anomaly_at_epoch = float(self._satellite._M.norm)
+        self.mean_motion_revs_per_day = self._satellite._n
         self.name = tle[0].strip()
         self.orbital_period = timedelta(days=1) / self.mean_motion_revs_per_day
         self.mean_motion = 2 * pi / self.orbital_period.total_seconds()
-        self.apoapsis_latitude = rad_to_deg(asin(
+        self.apoapsis_latitude = degrees(asin(
             sin(self.argument_of_periapsis + pi) * sin(self.inclination)
         ))
-        self.periapsis_latitude = rad_to_deg(asin(
+        self.periapsis_latitude = degrees(asin(
             sin(self.argument_of_periapsis) * sin(self.inclination)
         ))
         self.semi_major_axis = semi_major_axis(self.mean_motion)
@@ -90,8 +88,8 @@ class EarthSatellite(object):
         target_time = datetime.utcnow() + timedelta(seconds=plus_seconds)
         self._satellite.compute(target_time)
         self.altitude = self._satellite.elevation
-        self.latitude = rad_to_deg(self._satellite.sublat)
-        self.longitude = rad_to_deg(self._satellite.sublong)
+        self.latitude = degrees(self._satellite.sublat)
+        self.longitude = degrees(self._satellite.sublong)
         self.mean_anomaly = (
             self.mean_anomaly_at_epoch +
             self.mean_motion * (
@@ -111,9 +109,9 @@ class EarthSatellite(object):
         self.velocity = orbital_velocity(self.semi_major_axis, self.altitude, self.latitude)
 
         self._satellite.compute(target_time + self.time_to_periapsis)
-        self.periapsis_latitude = rad_to_deg(self._satellite.sublat)
-        self.periapsis_longitude = rad_to_deg(self._satellite.sublong)
+        self.periapsis_latitude = degrees(self._satellite.sublat)
+        self.periapsis_longitude = degrees(self._satellite.sublong)
 
         self._satellite.compute(target_time + self.time_to_apoapsis)
-        self.apoapsis_latitude = rad_to_deg(self._satellite.sublat)
-        self.apoapsis_longitude = rad_to_deg(self._satellite.sublong)
+        self.apoapsis_latitude = degrees(self._satellite.sublat)
+        self.apoapsis_longitude = degrees(self._satellite.sublong)

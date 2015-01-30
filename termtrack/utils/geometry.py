@@ -1,10 +1,3 @@
-from math import pi
-
-
-def deg_to_rad(value):
-    return value * pi / 180
-
-
 def point_in_poly(x, y, poly):
     n = len(poly)
     inside = False
@@ -20,7 +13,3 @@ def point_in_poly(x, y, poly):
                         inside = not inside
         p1x, p1y = p2x, p2y
     return inside
-
-
-def rad_to_deg(value):
-    return value * 180 / pi

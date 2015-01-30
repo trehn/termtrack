@@ -1,9 +1,9 @@
 import curses
 from datetime import datetime, timedelta
+from math import degrees
 
 import ephem
 
-from .utils.geometry import rad_to_deg
 from .utils.text import format_seconds
 
 
