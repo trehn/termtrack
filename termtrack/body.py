@@ -11,24 +11,33 @@ MAP_CACHE = "~/.termtrack_map_cache"
 
 
 class Body(object):
+    LON_MIN = -180
+    LON_CROPPED_MIN = LON_MIN
+    LON_MAX = 180
+    LON_CROPPED_MAX = LON_MAX
+    LAT_MIN = -90
+    LAT_CROPPED_MIN = LAT_MIN
+    LAT_MAX = 90
+    LAT_CROPPED_MAX = LAT_MAX
+
     def __init__(self, width, height):
         self.height = height
         self.width = width
-        self.lat_range = self.LAT_MAX - self.LAT_MIN
-        self.lon_range = self.LON_MAX - self.LON_MIN
+        self.lat_range = self.LAT_CROPPED_MAX - self.LAT_CROPPED_MIN
+        self.lon_range = self.LON_CROPPED_MAX - self.LON_CROPPED_MIN
         self.pixel_percentage = 100 / (self.width * self.height)
         self._sf = shapefile.Reader(join(dirname(__file__), "data", self.SHAPEFILE))
 
     def from_latlon(self, lat, lon):
         if (
-            lat > self.LAT_MAX or
-            lat < self.LAT_MIN or
-            lon > self.LON_MAX or
-            lon < self.LON_MIN
+            lat > self.LAT_CROPPED_MAX or
+            lat < self.LAT_CROPPED_MIN or
+            lon > self.LON_CROPPED_MAX or
+            lon < self.LON_CROPPED_MIN
         ):
             raise ValueError()
-        xrel = (lon - self.LON_MIN) / self.lon_range
-        yrel = (self.LAT_MAX - lat) / self.lat_range
+        xrel = (lon - self.LON_CROPPED_MIN) / self.lon_range
+        yrel = (self.LAT_CROPPED_MAX - lat) / self.lat_range
         x = int(round((self.width - 1) * xrel))
         y = int(round((self.height - 1) * yrel))
         return min(x, self.width - 1), min(y, self.height - 1)
@@ -74,15 +83,13 @@ class Body(object):
         xrel = x / (self.width - 1)
         yrel = y / (self.height - 1)
         return (
-            self.LAT_MAX - yrel * self.lat_range,
-            self.LON_MIN + xrel * self.lon_range,
+            self.LAT_CROPPED_MAX - yrel * self.lat_range,
+            self.LON_CROPPED_MIN + xrel * self.lon_range,
         )
 
 
 class Earth(Body):
-    LON_MIN = -180
-    LON_MAX = 180
-    LAT_MIN = -60
-    LAT_MAX = 85
+    LAT_CROPPED_MIN = -60
+    LAT_CROPPED_MAX = 85
     NAME = "Earth"
     SHAPEFILE = "ne_110m_land.shp"
