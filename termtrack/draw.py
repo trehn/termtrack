@@ -4,6 +4,7 @@ from math import degrees
 
 import ephem
 
+from .utils.curses import closest_color
 from .utils.text import format_seconds
 
 
@@ -158,22 +159,23 @@ def draw_map(stdscr, body):
             obs.lat = "{:.8f}".format(lat)
             obs.lon = "{:.8f}".format(lon)
             sun.compute(obs)
+            # astronomical twilight starts at -18°
+            # -0.3141592 = radians(-18)
+            night_factor = max(min(sun.alt, 0), -0.3141592) / -0.3141592
 
-            if sun.alt > 0:
-                color = None
-            elif sun.alt > -0.05:
-                color = 37
-            elif sun.alt > -0.1:
-                color = 33
-            elif sun.alt > -0.2:
-                color = 28
-            else:
-                color = 22
-
-            if body.map[x][y] is None:
+            if body.map[x][y][3] is None:
                 stdscr.addstr(y, x, " ", curses.color_pair(1))
             else:
-                stdscr.addstr(y, x, "•", curses.color_pair(body.map[x][y] if color is None else color))
+                r, g, b, color = body.map[x][y]
+                if night_factor > -0.001:
+                    night_r = 0
+                    night_g = g * 0.2
+                    night_b = min(b + 40, 255)
+                    effective_r = ((1 - night_factor) * r) + (night_factor * night_r)
+                    effective_g = ((1 - night_factor) * g) + (night_factor * night_g)
+                    effective_b = ((1 - night_factor) * b) + (night_factor * night_b)
+                    color = closest_color(effective_r, effective_g, effective_b)
+                stdscr.addstr(y, x, "•", curses.color_pair(color))
 
     return body
 
@@ -217,10 +219,10 @@ def draw_satellite_crosshair(stdscr, body, satellite):
     except ValueError:
         return
     for i in range(body.width-1):
-        if not body.map[i][y]:
+        if body.map[i][y][3] is None:
             stdscr.addstr(y, i, "─", curses.color_pair(235))
     for i in range(body.height):
-        if not body.map[x][i]:
+        if body.map[x][i][3] is None:
             stdscr.addstr(i, x, "|", curses.color_pair(235))
 
 

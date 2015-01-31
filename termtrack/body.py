@@ -68,7 +68,7 @@ class Body(object):
             for x in range(self.width):
                 for y in range(self.height):
                     yield progress
-                    color = None
+                    color = r = g = b = None
                     if self.SHAPEFILE is not None:
                         lat, lon = self.to_latlon(x, y)
                         for shape in self._sf.iterShapes():
@@ -81,11 +81,13 @@ class Body(object):
                                 lon > shape.bbox[0] and
                                 lon < shape.bbox[2]
                             ) and point_in_poly(lon, lat, shape.points):
-                                color = closest_color(*pixels[x, y])
+                                r, g, b = pixels[x, y]
+                                color = closest_color(r, g, b)
                                 break
                     else:
-                        color = closest_color(*pixels[x, y])
-                    self.map[x][y] = color
+                        r, g, b = pixels[x, y]
+                        color = closest_color(r, g, b)
+                    self.map[x][y] = (r, g, b, color)
                     progress += self.pixel_percentage
                     yield progress
             map_cache[map_cache_key] = self.map
