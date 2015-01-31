@@ -132,6 +132,7 @@ def draw_map(stdscr, body):
     start = datetime.now()
     height, width = stdscr.getmaxyx()
     width -= 1
+
     if body.height != height or body.width != width:
         body = body.__class__(width, height)
         progress_str = "0.0"
@@ -147,6 +148,7 @@ def draw_map(stdscr, body):
                     progress_str,
                 ))
                 stdscr.refresh()
+
     for x in range(width):
         for y in range(height):
             sun = ephem.Sun()
@@ -156,8 +158,9 @@ def draw_map(stdscr, body):
             obs.lat = "{:.8f}".format(lat)
             obs.lon = "{:.8f}".format(lon)
             sun.compute(obs)
+
             if sun.alt > 0:
-                color = 48
+                color = None
             elif sun.alt > -0.05:
                 color = 37
             elif sun.alt > -0.1:
@@ -166,10 +169,12 @@ def draw_map(stdscr, body):
                 color = 28
             else:
                 color = 22
-            if body.map[x][y]:
-                stdscr.addstr(y, x, "•", curses.color_pair(color))
+
+            if body.map[x][y] is None:
+                stdscr.addstr(y, x, " ", curses.color_pair(1))
             else:
-                stdscr.addstr(y, x, " ", curses.color_pair(color))
+                stdscr.addstr(y, x, "•", curses.color_pair(body.map[x][y] if color is None else color))
+
     return body
 
 

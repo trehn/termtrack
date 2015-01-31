@@ -30,6 +30,7 @@ setup(
     },
     install_requires=[
         "click >= 2.0",
+        "Pillow >= 2.7.0",
         "pyephem >= 3.7.5.0",
         "pyshp >= 1.2.1",
     ],

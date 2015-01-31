@@ -2,8 +2,10 @@ from copy import copy
 from os.path import dirname, expanduser, join
 import shelve
 
+from PIL import Image
 import shapefile
 
+from .utils.curses import closest_color
 from .utils.geometry import point_in_poly
 
 
@@ -26,7 +28,9 @@ class Body(object):
         self.lat_range = self.LAT_CROPPED_MAX - self.LAT_CROPPED_MIN
         self.lon_range = self.LON_CROPPED_MAX - self.LON_CROPPED_MIN
         self.pixel_percentage = 100 / (self.width * self.height)
-        self._sf = shapefile.Reader(join(dirname(__file__), "data", self.SHAPEFILE))
+        self._img = Image.open(join(dirname(__file__), "data", self.COLORMAP))
+        if self.SHAPEFILE is not None:
+            self._sf = shapefile.Reader(join(dirname(__file__), "data", self.SHAPEFILE))
 
     def from_latlon(self, lat, lon):
         if (
@@ -52,27 +56,36 @@ class Body(object):
             progress = 0.0
             empty_line = [None for i in range(self.height)]
             self.map = [copy(empty_line) for i in range(self.width)]
+
+            crop_left = int((self._img.size[0] / 2) * (1 - (self.LON_CROPPED_MIN / self.LON_MIN)))
+            crop_right = int((self._img.size[0] / 2) + (self._img.size[0] / 2) * (self.LON_CROPPED_MAX / self.LON_MAX))
+            crop_top = int((self._img.size[1] / 2) * (1 - (self.LAT_CROPPED_MAX / self.LAT_MAX)))
+            crop_bottom = int((self._img.size[1] / 2) + (self._img.size[1] / 2) * (self.LAT_CROPPED_MIN / self.LAT_MIN))
+            img = self._img.crop((crop_left, crop_top, crop_right, crop_bottom))
+            img = img.resize((self.width, self.height))
+            pixels = img.load()
+
             for x in range(self.width):
                 for y in range(self.height):
                     yield progress
-                    lat, lon = self.to_latlon(x, y)
-                    land = False
-                    for shape in self._sf.shapes():
-                        if (
-                            # for performance reasons we quickly check the
-                            # bounding box before trying the more expensive
-                            # point_in_poly() call
-                            lat > shape.bbox[1] and
-                            lat < shape.bbox[3] and
-                            lon > shape.bbox[0] and
-                            lon < shape.bbox[2]
-                        ) and point_in_poly(lon, lat, shape.points):
-                            land = True
-                            break
-                    if land:
-                        self.map[x][y] = True
+                    color = None
+                    if self.SHAPEFILE is not None:
+                        lat, lon = self.to_latlon(x, y)
+                        for shape in self._sf.iterShapes():
+                            if (
+                                # for performance reasons we quickly check the
+                                # bounding box before trying the more expensive
+                                # point_in_poly() call
+                                lat > shape.bbox[1] and
+                                lat < shape.bbox[3] and
+                                lon > shape.bbox[0] and
+                                lon < shape.bbox[2]
+                            ) and point_in_poly(lon, lat, shape.points):
+                                color = closest_color(*pixels[x, y])
+                                break
                     else:
-                        self.map[x][y] = False
+                        color = closest_color(*pixels[x, y])
+                    self.map[x][y] = color
                     progress += self.pixel_percentage
                     yield progress
             map_cache[map_cache_key] = self.map
@@ -92,4 +105,5 @@ class Earth(Body):
     LAT_CROPPED_MIN = -60
     LAT_CROPPED_MAX = 85
     NAME = "Earth"
+    COLORMAP = "earth.jpg"
     SHAPEFILE = "ne_110m_land.shp"
