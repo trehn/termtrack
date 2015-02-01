@@ -31,6 +31,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  -o, --orbits N            Draw this many orbits ahead of the satellite
 	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
 	                            observer; overrides IP-geolocation
+	  -T, --no-topo             Disable rendering of topographical features
 	  -Y, --no-you              Don't auto-detect your location as observer
 	  --version                 Show version and exit
 	  --help                    Show this message and exit

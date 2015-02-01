@@ -22,6 +22,7 @@ def render(
         apsides=False,
         crosshair=False,
         fps=1,
+        no_topo=False,
         no_you=False,
         observer=None,
         orbits=0,
@@ -53,7 +54,7 @@ def render(
         while True:
             with curses_lock:
                 stdscr.erase()
-                body = draw_map(stdscr, body)
+                body = draw_map(stdscr, body, topo=not no_topo)
                 if satellite is not None:
                     satellite_obj.compute()
                     if crosshair:
@@ -95,6 +96,8 @@ def print_version(ctx, param, value):
 @click.option("-O", "--observer", default=None, metavar="'LAT LON'",
               help="Space-separated latitude and longitude of an "
                    "observer; overrides IP-geolocation")
+@click.option("-T", "--no-topo", is_flag=True, default=False,
+              help="Disable rendering of topographical features")
 @click.option("-Y", "--no-you", is_flag=True, default=False,
               help="Don't auto-detect your location as observer")
 @click.option("--version", is_flag=True, callback=print_version,

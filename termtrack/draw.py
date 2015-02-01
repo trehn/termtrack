@@ -129,7 +129,7 @@ def draw_info(stdscr, satellite):
             y += 1
 
 
-def draw_map(stdscr, body):
+def draw_map(stdscr, body, topo=True):
     start = datetime.now()
     height, width = stdscr.getmaxyx()
     width -= 1
@@ -166,7 +166,10 @@ def draw_map(stdscr, body):
             if body.map[x][y][3] is None:
                 stdscr.addstr(y, x, " ", curses.color_pair(1))
             else:
-                r, g, b, color = body.map[x][y]
+                if topo is True:
+                    r, g, b, color = body.map[x][y]
+                else:
+                    r, g, b, color = 0, 249, 114, 48
                 if night_factor > -0.001:
                     night_r = 0
                     night_g = g * 0.2
