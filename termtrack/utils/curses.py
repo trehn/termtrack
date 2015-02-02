@@ -116,9 +116,12 @@ RGB_256 = (
     ((217, 217, 217), 253),
     ((225, 225, 225), 254),
 )
+RGB_CACHE = {}
 
 
 def closest_color(r, g, b):
+    if (r, g, b) in RGB_CACHE.keys():
+        return RGB_CACHE[(r, g, b)]
     best_candidate = 0
     best_distance = 765
     for rgb, candidate in RGB_256:
@@ -126,6 +129,7 @@ def closest_color(r, g, b):
         if distance < best_distance:
             best_candidate = candidate
             best_distance = distance
+    RGB_CACHE[(r, g, b)] = best_candidate
     return best_candidate
 
 
