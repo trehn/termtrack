@@ -39,7 +39,7 @@ def render(
         body = Earth(1, 1)
         observer_latitude = None
         observer_longitude = None
-        if not no_you:
+        if not no_you and observer is None:
             location_data = get("http://ip-api.com/json").json()
             observer_latitude = location_data['lat']
             observer_longitude = location_data['lon']
