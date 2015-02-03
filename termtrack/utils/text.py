@@ -3,6 +3,8 @@ def format_seconds(seconds, hide_seconds=False):
     Returns a human-readable string representation of the given amount
     of seconds.
     """
+    if seconds < 1:
+        return "0s"
     output = ""
     for period, period_seconds in (
         ('y', 31557600),
