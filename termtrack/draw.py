@@ -17,7 +17,7 @@ def draw_info(stdscr, satellite):
     width -= 1
     text_basic = InfoPanel()
     text_basic.append(satellite.name)
-    text_basic.append("")
+    text_basic.append("---")
     text_basic.append("Latitude:")
     text_basic.append("  {:.6f}°".format(satellite.latitude))
     text_basic.append("")
@@ -53,7 +53,7 @@ def draw_info(stdscr, satellite):
     text_apsides.append("")
     text_apsides.append("Time since apogee:")
     text_apsides.append("  " + format_seconds(satellite.time_since_apoapsis.total_seconds()))
-    text_apsides.top = True
+    text_apsides.top = False
     text_apsides.left = False
 
     text_params = InfoPanel()
@@ -85,7 +85,7 @@ def draw_info(stdscr, satellite):
     if satellite.observer_latitude is not None and satellite.observer_longitude is not None:
         text_observer = InfoPanel()
         text_observer.append("Observer")
-        text_observer.append("")
+        text_observer.append("---")
         text_observer.append("Latitude:")
         text_observer.append("  {:.6f}°".format(satellite.observer_latitude))
         text_observer.append("")
@@ -97,7 +97,7 @@ def draw_info(stdscr, satellite):
         text_observer.append("")
         text_observer.append("Altitude:")
         text_observer.append("  {:.2f}°".format(degrees(satellite.observer_altitude)))
-        text_observer.top = False
+        text_observer.top = True
         text_observer.left = False
         panels.append(text_observer)
 
@@ -106,9 +106,12 @@ def draw_info(stdscr, satellite):
 
         text.padded_lines = []
         for line in text:
-            text.padded_lines.append("┃ " + line.ljust(longest_line+1) + "┃")
-        text.padded_lines.insert(0, "╭" + "─" * (longest_line+2) + "╮")
-        text.padded_lines.append("╰" + "─" * (longest_line+2) + "╯")
+            if line == "---":
+                text.padded_lines.append("┣" + "─" * (longest_line+2) + "┫")
+            else:
+                text.padded_lines.append("┃ " + line.ljust(longest_line+1) + "┃")
+        text.padded_lines.insert(0, "┏" + "─" * (longest_line+2) + "┓")
+        text.padded_lines.append("┗" + "─" * (longest_line+2) + "┛")
 
         if text.left:
             text.x = 2
