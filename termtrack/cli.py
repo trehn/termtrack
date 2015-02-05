@@ -7,7 +7,15 @@ from requests import get
 
 from . import VERSION_STRING
 from .body import Earth
-from .draw import draw_info, draw_location, draw_map, draw_satellite, draw_satellite_crosshair
+from .draw import (
+    draw_apsides,
+    draw_info,
+    draw_location,
+    draw_map,
+    draw_orbits,
+    draw_satellite,
+    draw_satellite_crosshair,
+)
 from .satellite import EarthSatellite
 from .utils.curses import graceful_ctrlc, input_thread_body, setup
 from .utils.curses import (
@@ -27,6 +35,7 @@ def render(
         no_you=False,
         observer=None,
         orbits=0,
+        orbit_res="/70",
         satellite=None,
         **kwargs
     ):
@@ -60,7 +69,17 @@ def render(
                     satellite_obj.compute()
                     if crosshair:
                         draw_satellite_crosshair(stdscr, body, satellite_obj)
-                    draw_satellite(stdscr, body, satellite_obj, apsides=apsides, orbits=orbits)
+                    if orbits > 0:
+                        draw_orbits(
+                            stdscr,
+                            body,
+                            satellite_obj,
+                            orbits=orbits,
+                            orbit_resolution=orbit_res,
+                        )
+                    if apsides:
+                        draw_apsides(stdscr, body, satellite_obj)
+                    draw_satellite(stdscr, body, satellite_obj)
                 if observer_latitude is not None and observer_longitude is not None:
                     draw_location(stdscr, body, observer_latitude, observer_longitude)
                 if info_panel and satellite is not None:
@@ -99,6 +118,9 @@ def print_version(ctx, param, value):
 @click.option("-O", "--observer", default=None, metavar="'LAT LON'",
               help="Space-separated latitude and longitude of an "
                    "observer; overrides IP-geolocation")
+@click.option("-r", "--orbit-res", default="/70", metavar="[/]N",
+              help="Set distance of orbit markers: 'N' means N minutes, "
+                   "'/N' means 1/Nth of orbital period (defaults to /70)")
 @click.option("-T", "--no-topo", is_flag=True, default=False,
               help="Disable rendering of topographical features")
 @click.option("-Y", "--no-you", is_flag=True, default=False,

@@ -189,10 +189,14 @@ def draw_map(stdscr, body, night=True, topo=True):
     return body
 
 
-def draw_satellite(stdscr, body, satellite, apsides=False, orbits=0):
+def draw_orbits(stdscr, body, satellite, orbits=0, orbit_resolution="/70"):
     orbit_offset = timedelta()
+    if orbit_resolution.startswith("/"):
+        orbit_increment = satellite.orbital_period / int(orbit_resolution[1:])
+    else:
+        orbit_increment = timedelta(minutes=int(orbit_resolution))
     while orbit_offset < satellite.orbital_period * orbits:
-        orbit_offset += satellite.orbital_period / 80
+        orbit_offset += orbit_increment
         satellite.compute(plus_seconds=orbit_offset.total_seconds())
         try:
             x, y = body.from_latlon(satellite.latitude, satellite.longitude)
@@ -203,18 +207,21 @@ def draw_satellite(stdscr, body, satellite, apsides=False, orbits=0):
     # reset values to current
     satellite.compute()
 
-    if apsides:
-        try:
-            x, y = body.from_latlon(satellite.apoapsis_latitude, satellite.apoapsis_longitude)
-            stdscr.addstr(y, x, "A", curses.color_pair(167))
-        except ValueError:
-            pass
-        try:
-            x, y = body.from_latlon(satellite.periapsis_latitude, satellite.periapsis_longitude)
-            stdscr.addstr(y, x, "P", curses.color_pair(167))
-        except ValueError:
-            pass
 
+def draw_apsides(stdscr, body, satellite):
+    try:
+        x, y = body.from_latlon(satellite.apoapsis_latitude, satellite.apoapsis_longitude)
+        stdscr.addstr(y, x, "A", curses.color_pair(167))
+    except ValueError:
+        pass
+    try:
+        x, y = body.from_latlon(satellite.periapsis_latitude, satellite.periapsis_longitude)
+        stdscr.addstr(y, x, "P", curses.color_pair(167))
+    except ValueError:
+        pass
+
+
+def draw_satellite(stdscr, body, satellite):
     try:
         x, y = body.from_latlon(satellite.latitude, satellite.longitude)
         stdscr.addstr(y, x, "X", curses.color_pair(16))
