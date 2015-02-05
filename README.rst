@@ -26,6 +26,8 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 
 	Options:
 	  --apsides                 Draw apoapsis and periapsis markers
+	  -b, --body BODY           Which celestial body to draw: Earth, Moon or Mars
+	                            (defaults to Earth)
 	  -c, --crosshair           Draw crosshair around satellite location
 	  -f, --fps N               Frames per second (defaults to 1)
 	  -N, --no-night            Don't shade night side

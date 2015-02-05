@@ -6,7 +6,7 @@ import click
 from requests import get
 
 from . import VERSION_STRING
-from .body import Earth
+from .body import BODY_MAP
 from .draw import (
     draw_apsides,
     draw_info,
@@ -28,6 +28,7 @@ from .utils.curses import (
 def render(
         stdscr,
         apsides=False,
+        body="earth",
         crosshair=False,
         fps=1,
         no_night=False,
@@ -46,7 +47,12 @@ def render(
     )
     input_thread.start()
     try:
-        body = Earth(1, 1)
+        body = BODY_MAP[body.lower()](1, 1)
+        if body.NAME != "Earth":
+            no_night = True
+            no_topo = False
+            no_you = True
+            satellite = None
         observer_latitude = None
         observer_longitude = None
         if not no_you and observer is None:
@@ -107,6 +113,9 @@ def print_version(ctx, param, value):
 @click.command()
 @click.option("--apsides", is_flag=True, default=False,
               help="Draw apoapsis and periapsis markers")
+@click.option("-b", "--body", default="earth", metavar="BODY",
+              help="Which celestial body to draw: Earth, Moon or Mars "
+                   "(defaults to Earth)")
 @click.option("-c", "--crosshair", is_flag=True, default=False,
               help="Draw crosshair around satellite location")
 @click.option("-f", "--fps", default=1, metavar="N",

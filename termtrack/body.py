@@ -109,3 +109,24 @@ class Earth(Body):
     NAME = "Earth"
     COLORMAP = "earth.jpg"
     SHAPEFILE = "ne_110m_land.shp"
+
+
+class Mars(Body):
+    NAME = "Mars"
+    COLORMAP = "mars.jpg"
+    SHAPEFILE = None
+
+
+class Moon(Body):
+    NAME = "Moon"
+    COLORMAP = "moon.jpg"
+    SHAPEFILE = None
+
+
+BODY_MAP = {
+    'earth': Earth,
+    'luna': Moon,
+    'mars': Mars,
+    'moon': Moon,
+    'terra': Earth,
+}
