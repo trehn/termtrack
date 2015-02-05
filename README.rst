@@ -28,6 +28,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  --apsides                 Draw apoapsis and periapsis markers
 	  -c, --crosshair           Draw crosshair around satellite location
 	  -f, --fps N               Frames per second (defaults to 1)
+	  -N, --no-night            Don't shade night side
 	  -o, --orbits N            Draw this many orbits ahead of the satellite
 	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
 	                            observer; overrides IP-geolocation

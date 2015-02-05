@@ -132,7 +132,7 @@ def draw_info(stdscr, satellite):
             y += 1
 
 
-def draw_map(stdscr, body, topo=True):
+def draw_map(stdscr, body, night=True, topo=True):
     start = datetime.now()
     height, width = stdscr.getmaxyx()
     width -= 1
@@ -155,16 +155,19 @@ def draw_map(stdscr, body, topo=True):
 
     for x in range(width):
         for y in range(height):
-            sun = ephem.Sun()
-            obs = ephem.Observer()
-            obs.pressure = 0
-            lat, lon = body.to_latlon(x, y)
-            obs.lat = "{:.8f}".format(lat)
-            obs.lon = "{:.8f}".format(lon)
-            sun.compute(obs)
-            # astronomical twilight starts at -18°
-            # -0.3141592 = radians(-18)
-            night_factor = max(min(sun.alt, 0), -0.3141592) / -0.3141592
+            if night:
+                sun = ephem.Sun()
+                obs = ephem.Observer()
+                obs.pressure = 0
+                lat, lon = body.to_latlon(x, y)
+                obs.lat = "{:.8f}".format(lat)
+                obs.lon = "{:.8f}".format(lon)
+                sun.compute(obs)
+                # astronomical twilight starts at -18°
+                # -0.3141592 = radians(-18)
+                night_factor = max(min(sun.alt, 0), -0.3141592) / -0.3141592
+            else:
+                night_factor = 0
 
             if body.map[x][y][3] is None:
                 stdscr.addstr(y, x, " ", curses.color_pair(1))

@@ -22,6 +22,7 @@ def render(
         apsides=False,
         crosshair=False,
         fps=1,
+        no_night=False,
         no_topo=False,
         no_you=False,
         observer=None,
@@ -54,7 +55,7 @@ def render(
         while True:
             with curses_lock:
                 stdscr.erase()
-                body = draw_map(stdscr, body, topo=not no_topo)
+                body = draw_map(stdscr, body, night=not no_night, topo=not no_topo)
                 if satellite is not None:
                     satellite_obj.compute()
                     if crosshair:
@@ -91,6 +92,8 @@ def print_version(ctx, param, value):
               help="Draw crosshair around satellite location")
 @click.option("-f", "--fps", default=1, metavar="N",
               help="Frames per second (defaults to 1)")
+@click.option("-N", "--no-night", is_flag=True, default=False,
+              help="Don't shade night side")
 @click.option("-o", "--orbits", default=0, metavar="N",
               help="Draw this many orbits ahead of the satellite")
 @click.option("-O", "--observer", default=None, metavar="'LAT LON'",
