@@ -23,6 +23,9 @@ setup(
     packages=find_packages(),
     package_data={
         "termtrack": [
+            "data/earth.jpg",
+            "data/mars.jpg",
+            "data/moon.jpg",
             "data/ne_110m_land.dbf",
             "data/ne_110m_land.shp",
             "data/ne_110m_land.shx",
