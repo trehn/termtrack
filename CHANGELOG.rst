@@ -1,3 +1,11 @@
+0.3.1
+=====
+
+2015-02-08
+
+* added missing data files to distribution
+
+
 0.3.0
 =====
 
