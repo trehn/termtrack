@@ -7,8 +7,12 @@ from requests import get
 
 
 ALIASES = {
+    'hst': 20580,
+    'hubble': 20580,
     'iss': 25544,
     'tiangong': 37820,
+    'tiangong-1': 37820,
+    'tiangong1': 37820,
 }
 TLE_REGEX = re.compile("PRE>(.*)</PRE", flags=re.DOTALL)
 EARTH_FLATTENING_COEFFICIENT = 0.003352891869237217

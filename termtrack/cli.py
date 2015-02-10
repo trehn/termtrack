@@ -143,7 +143,12 @@ def main(**kwargs):
     \b
     Shows a world map tracking SATELLITE. Valid values for SATELLITE are
     numbers from http://www.celestrak.com/NORAD/elements/master.asp (for
-    your convenience, "iss" or "tiangong" are also allowed).
+    your convenience, the aliases listed below are also allowed).
+    \b
+    Satellite aliases:
+    \thubble\t\tHubble Space Telescope
+    \tiss\t\tInternational Space Station
+    \ttiangong\tTiangong-1 (Chinese space station)
     \b
     Hotkeys:
     \ti\tToggle info panels

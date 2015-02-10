@@ -18,7 +18,12 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 
 	  Shows a world map tracking SATELLITE. Valid values for SATELLITE are
 	  numbers from http://www.celestrak.com/NORAD/elements/master.asp (for
-	  your convenience, "iss" or "tiangong" are also allowed).
+	  your convenience, the aliases listed below are also allowed).
+
+	  Satellite aliases:
+	      hubble          Hubble Space Telescope
+	      iss             International Space Station
+	      tiangong        Tiangong-1 (Chinese space station)
 
 	  Hotkeys:
 	      i       Toggle info panels
