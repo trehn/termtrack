@@ -67,3 +67,18 @@ Credit goes to `vain/asciiworld <https://github.com/vain/asciiworld>`_ for inspi
 .. image:: http://img.shields.io/badge/License-GPLv3-red.svg
     :target: https://pypi.python.org/pypi/termtrack/
     :alt: License
+
+------------------------------------------------------------------------
+
+Known Issues
+============
+
+When looking at the ISS, you may notice some inconsistencies:
+
+* the apoapsis/periapsis altitudes from the info panel do not match up with live altitude values when the satellite actually is at that point
+* sometimes the current altitude is lower/higher than periapsis/apoapsis altitude
+* the location of apoapsis/periapsis markers from --apsides are not located at the transition points between plus and minus signs drawn by --orbit-ascdesc
+
+Where do these errors come from? The locations of the apsides are derived from the true anomaly which matches values from http://www.satellite-calculations.com/TLETracker/SatTracker.htm so I'm assuming that's not the source of the error. The shape of the Earth also does not explain the deviations in altitude.
+
+Interestingly enough, when you look at more eccentric orbits like that of QZS-1 (37158) the errors seem to disappear, suggesting that the issue is merely inaccuracy instead of a plain wrong calculation somewhere.
