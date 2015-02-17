@@ -36,6 +36,7 @@ def render(
         no_you=False,
         observer=None,
         orbits=0,
+        orbit_ascdesc=False,
         orbit_res="/70",
         satellite=None,
         **kwargs
@@ -81,6 +82,7 @@ def render(
                             body,
                             satellite_obj,
                             orbits=orbits,
+                            orbit_ascdesc=orbit_ascdesc,
                             orbit_resolution=orbit_res,
                         )
                     if apsides:
@@ -124,6 +126,8 @@ def print_version(ctx, param, value):
               help="Don't shade night side")
 @click.option("-o", "--orbits", default=0, metavar="N",
               help="Draw this many orbits ahead of the satellite")
+@click.option("--orbit-ascdesc", is_flag=True, default=False,
+              help="Draw orbit with ascent/descent markers")
 @click.option("-O", "--observer", default=None, metavar="'LAT LON'",
               help="Space-separated latitude and longitude of an "
                    "observer; overrides IP-geolocation")

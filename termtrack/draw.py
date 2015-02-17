@@ -189,18 +189,32 @@ def draw_map(stdscr, body, night=True, topo=True):
     return body
 
 
-def draw_orbits(stdscr, body, satellite, orbits=0, orbit_resolution="/70"):
+def draw_orbits(stdscr, body, satellite, orbit_ascdesc=False, orbits=0, orbit_resolution="/70"):
     orbit_offset = timedelta()
     if orbit_resolution.startswith("/"):
         orbit_increment = satellite.orbital_period / int(orbit_resolution[1:])
     else:
-        orbit_increment = timedelta(minutes=int(orbit_resolution))
+        orbit_increment = timedelta(minutes=float(orbit_resolution))
+
+    satellite.compute()
+    previous_altitude = satellite.altitude
+
     while orbit_offset < satellite.orbital_period * orbits:
         orbit_offset += orbit_increment
         satellite.compute(plus_seconds=orbit_offset.total_seconds())
+
+        if orbit_ascdesc:
+            if satellite.altitude - previous_altitude >= 0:
+                char = "+"
+            else:
+                char = "-"
+            previous_altitude = satellite.altitude
+        else:
+            char = "•"
+
         try:
             x, y = body.from_latlon(satellite.latitude, satellite.longitude)
-            stdscr.addstr(y, x, "•", curses.color_pair(167))
+            stdscr.addstr(y, x, char, curses.color_pair(167))
         except ValueError:
             pass
 
