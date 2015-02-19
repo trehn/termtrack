@@ -1,10 +1,11 @@
 import curses
 from datetime import datetime, timedelta
-from math import degrees
+from math import acos, cos, degrees, pi, radians, sin
 
 import ephem
 
-from .utils.curses import closest_color
+from .satellite import earth_radius_at_latitude
+from .utils.curses import closest_color, get_adjacent
 from .utils.text import format_seconds
 
 
@@ -235,6 +236,67 @@ def draw_apsides(stdscr, body, satellite):
         pass
 
 
+def draw_horizon(stdscr, body, satellite):
+    height, width = stdscr.getmaxyx()
+    satellite_x, satellite_y = body.from_latlon(satellite.latitude, satellite.longitude)
+    earth_radius = earth_radius_at_latitude(satellite.latitude)
+    horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
+
+    current_pixel = (0, 0)
+    previous_pixel = (-1, -1)
+    visited_pixels = []
+
+    # DEBUG
+    with open("debug.txt", "w") as f:
+        f.write("")
+    f = open("debug.txt", "a")
+
+    # DEBUG
+    scores = []
+
+    # just so we don't end up in an infinite loop if there's a bug
+    i = 0
+    while i < 500:
+
+        # DEBUG
+        f.write("current: " + str(current_pixel) + "\n")
+
+        if current_pixel in visited_pixels:
+            break
+        visited_pixels.append(current_pixel)
+        best_pixel = None
+        best_score = float("inf")
+        for x, y in get_adjacent(current_pixel[0], current_pixel[1], width, height, but_not=previous_pixel):
+            lat, lon = body.to_latlon(x, y)
+            sat_lat, sat_lon = body.to_latlon(satellite_x, satellite_y)
+            score = small_circle(lat, lon, sat_lat, sat_lon, horizon_radius)
+            # DEBUG
+            f.write("adj: " + str((x, y)) + " " + str(score) + "\n")
+
+            if score < best_score:
+                best_pixel = (x, y)
+                best_score = score
+
+        # DEBUG
+        scores.append((best_pixel, best_score))
+
+        previous_pixel = current_pixel
+        current_pixel = best_pixel
+        i += 1
+
+    #visited_pixels = visited_pixels[visited_pixels.index(current_pixel):]
+
+    # DEBUG
+    f.write(repr(scores))
+    f.close()
+
+    for x, y in visited_pixels:
+        try:
+            stdscr.addstr(y, x, "•", curses.color_pair(6))
+        except ValueError:
+            pass
+
+
 def draw_satellite(stdscr, body, satellite):
     try:
         x, y = body.from_latlon(satellite.latitude, satellite.longitude)
@@ -259,3 +321,28 @@ def draw_satellite_crosshair(stdscr, body, satellite):
 def draw_location(stdscr, body, lat, lon):
     x, y = body.from_latlon(lat, lon)
     stdscr.addstr(y, x, "•", curses.color_pair(2))
+
+
+def small_circle(
+        candidate_latitude,
+        candidate_longitude,
+        center_latitude,
+        center_longitude,
+        radius,
+    ):
+    """
+    Returns how far away a given candidate point is from the small
+    circle defined by the given center point and radius.
+
+    Smaller is better.
+    """
+    candidate_latitude = radians(candidate_latitude)
+    candidate_longitude = radians(candidate_longitude)
+    center_latitude = radians(center_latitude)
+    center_longitude = radians(center_longitude)
+    return abs(
+        sin(candidate_latitude) *
+        sin(center_latitude) + cos(candidate_latitude) *
+        cos(center_latitude) *
+        cos(candidate_longitude - center_longitude) - cos(radius)
+    )

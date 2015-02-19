@@ -296,6 +296,34 @@ def setup(stdscr):
     return (curses_lock, input_queue, quit_event)
 
 
+def get_adjacent(x, y, width, height, but_not=(-1, -1)):
+    """
+    Returns a list of tuples with coordinates adjacent to x, y.
+    """
+    width -= 1
+    height -= 1
+    adjacent_dumb = (
+        (x-1, y-1),
+        (x-1, y),
+        (x+1, y),
+        (x+1, y+1),
+        (x-1, y+1),
+        (x+1, y-1),
+        (x, y+1),
+        (x, y-1),
+    )
+    adjacent_smart = []
+    for d_x, d_y in adjacent_dumb:
+        s_x = (d_x + width) % width
+        s_y = (d_y + height) % height
+        adjacent_smart.append((s_x, s_y))
+    try:
+        adjacent_smart.remove(but_not)
+    except ValueError:
+        pass
+    return tuple(adjacent_smart)
+
+
 def graceful_ctrlc(func):
     """
     Makes the decorated function terminate silently on CTRL+C.
