@@ -1,11 +1,11 @@
 import curses
 from datetime import datetime, timedelta
-from math import acos, cos, degrees, pi, radians, sin
+from math import acos, atan2, cos, degrees, radians, sin
 
 import ephem
 
 from .satellite import earth_radius_at_latitude
-from .utils.curses import closest_color, get_adjacent
+from .utils.curses import closest_color
 from .utils.text import format_seconds
 
 
@@ -236,65 +236,81 @@ def draw_apsides(stdscr, body, satellite):
         pass
 
 
-def draw_horizon(stdscr, body, satellite):
+def draw_footprint(stdscr, body, satellite):
     height, width = stdscr.getmaxyx()
-    satellite_x, satellite_y = body.from_latlon(satellite.latitude, satellite.longitude)
     earth_radius = earth_radius_at_latitude(satellite.latitude)
     horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
+    sat_lat = radians(satellite.latitude)
+    sat_lon = radians(satellite.longitude)
+    for horizon_lat, horizon_lon in cartesian_rotation(
+        sat_lat,
+        sat_lon,
+        horizon_radius,
+        steps=int(width * 1.5),  # somewhat arbitrary
+    ):
+        x, y = body.from_latlon(horizon_lat, horizon_lon)
+        stdscr.addstr(y, x, "•", curses.color_pair(239))
 
-    current_pixel = (0, 0)
-    previous_pixel = (-1, -1)
-    visited_pixels = []
 
-    # DEBUG
-    with open("debug.txt", "w") as f:
-        f.write("")
-    f = open("debug.txt", "a")
+def cartesian_rotation(lat, lon, r, steps=128):
+    """
+    Internally converts to Cartesian coordinates and applies a rotation
+    matrix to yield a number of points (equal to steps) on the small
+    circle described by the given latlon and radius (the latter being an
+    angle as well).
 
-    # DEBUG
-    scores = []
+    Full credit for this goes to github.com/vain.
+    """
+    # Avoid pushing over a pole
+    if lat > 0:
+        slat = degrees(lat) - degrees(r)
+    else:
+        slat = degrees(lat) + degrees(r)
 
-    # just so we don't end up in an infinite loop if there's a bug
-    i = 0
-    while i < 500:
+    s_theta = -lat + radians(90)
+    s_phi = lon
+    rx = sin(s_theta) * cos(s_phi)
+    ry = sin(s_theta) * sin(s_phi)
+    rz = cos(s_theta)
 
-        # DEBUG
-        f.write("current: " + str(current_pixel) + "\n")
+    alpha = radians(360.0 / steps)
 
-        if current_pixel in visited_pixels:
-            break
-        visited_pixels.append(current_pixel)
-        best_pixel = None
-        best_score = float("inf")
-        for x, y in get_adjacent(current_pixel[0], current_pixel[1], width, height, but_not=previous_pixel):
-            lat, lon = body.to_latlon(x, y)
-            sat_lat, sat_lon = body.to_latlon(satellite_x, satellite_y)
-            score = small_circle(lat, lon, sat_lat, sat_lon, horizon_radius)
-            # DEBUG
-            f.write("adj: " + str((x, y)) + " " + str(score) + "\n")
+    m = [
+        rx**2 * (1 - cos(alpha)) + cos(alpha),
+        ry * rx * (1 - cos(alpha)) + rz * sin(alpha),
+        rz * rx * (1 - cos(alpha)) - ry * sin(alpha),
 
-            if score < best_score:
-                best_pixel = (x, y)
-                best_score = score
+        rx * ry * (1 - cos(alpha)) - rz * sin(alpha),
+        ry**2 * (1 - cos(alpha)) + cos(alpha),
+        rz * ry * (1 - cos(alpha)) + rx * sin(alpha),
 
-        # DEBUG
-        scores.append((best_pixel, best_score))
+        rx * rz * (1 - cos(alpha)) + ry * sin(alpha),
+        ry * rz * (1 - cos(alpha)) - rx * sin(alpha),
+        rz**2 * (1 - cos(alpha)) + cos(alpha),
+    ]
 
-        previous_pixel = current_pixel
-        current_pixel = best_pixel
-        i += 1
+    s_theta = radians(-slat) + radians(90)
+    s_phi = lon
+    px = sin(s_theta) * cos(s_phi)
+    py = sin(s_theta) * sin(s_phi)
+    pz = cos(s_theta)
 
-    #visited_pixels = visited_pixels[visited_pixels.index(current_pixel):]
+    for i in range(steps):
+        p2x = px * m[0] + py * m[3] + pz * m[6]
+        p2y = px * m[1] + py * m[4] + pz * m[7]
+        p2z = px * m[2] + py * m[5] + pz * m[8]
 
-    # DEBUG
-    f.write(repr(scores))
-    f.close()
+        s_theta = acos(p2z)
+        s_phi = atan2(p2y, p2x)
 
-    for x, y in visited_pixels:
-        try:
-            stdscr.addstr(y, x, "•", curses.color_pair(6))
-        except ValueError:
-            pass
+        lat = degrees(radians(90) - s_theta)
+        lon = degrees(s_phi)
+
+        px = p2x
+        py = p2y
+        pz = p2z
+
+        yield lat, lon
 
 
 def draw_satellite(stdscr, body, satellite):
@@ -321,28 +337,3 @@ def draw_satellite_crosshair(stdscr, body, satellite):
 def draw_location(stdscr, body, lat, lon):
     x, y = body.from_latlon(lat, lon)
     stdscr.addstr(y, x, "•", curses.color_pair(2))
-
-
-def small_circle(
-        candidate_latitude,
-        candidate_longitude,
-        center_latitude,
-        center_longitude,
-        radius,
-    ):
-    """
-    Returns how far away a given candidate point is from the small
-    circle defined by the given center point and radius.
-
-    Smaller is better.
-    """
-    candidate_latitude = radians(candidate_latitude)
-    candidate_longitude = radians(candidate_longitude)
-    center_latitude = radians(center_latitude)
-    center_longitude = radians(center_longitude)
-    return abs(
-        sin(candidate_latitude) *
-        sin(center_latitude) + cos(candidate_latitude) *
-        cos(center_latitude) *
-        cos(candidate_longitude - center_longitude) - cos(radius)
-    )
