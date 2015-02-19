@@ -9,6 +9,7 @@ from . import VERSION_STRING
 from .body import BODY_MAP
 from .draw import (
     draw_apsides,
+    draw_footprint,
     draw_info,
     draw_location,
     draw_map,
@@ -30,6 +31,7 @@ def render(
         apsides=False,
         body="earth",
         crosshair=False,
+        footprint=False,
         fps=1,
         no_night=False,
         no_topo=False,
@@ -76,6 +78,8 @@ def render(
                     satellite_obj.compute()
                     if crosshair:
                         draw_satellite_crosshair(stdscr, body, satellite_obj)
+                    if footprint:
+                        draw_footprint(stdscr, body, satellite_obj)
                     if orbits > 0:
                         draw_orbits(
                             stdscr,
@@ -120,7 +124,9 @@ def print_version(ctx, param, value):
                    "(defaults to Earth)")
 @click.option("-c", "--crosshair", is_flag=True, default=False,
               help="Draw crosshair around satellite location")
-@click.option("-f", "--fps", default=1, metavar="N",
+@click.option("-f", "--footprint", is_flag=True, default=False,
+              help="Draw satellite footprint/horizon")
+@click.option("--fps", default=1, metavar="N",
               help="Frames per second (defaults to 1)")
 @click.option("-N", "--no-night", is_flag=True, default=False,
               help="Don't shade night side")

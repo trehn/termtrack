@@ -1,9 +1,10 @@
 import curses
 from datetime import datetime, timedelta
-from math import degrees
+from math import acos, atan2, cos, degrees, radians, sin
 
 import ephem
 
+from .satellite import earth_radius_at_latitude
 from .utils.curses import closest_color
 from .utils.text import format_seconds
 
@@ -233,6 +234,83 @@ def draw_apsides(stdscr, body, satellite):
         stdscr.addstr(y, x, "P", curses.color_pair(167))
     except ValueError:
         pass
+
+
+def draw_footprint(stdscr, body, satellite):
+    height, width = stdscr.getmaxyx()
+    earth_radius = earth_radius_at_latitude(satellite.latitude)
+    horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
+    sat_lat = radians(satellite.latitude)
+    sat_lon = radians(satellite.longitude)
+    for horizon_lat, horizon_lon in cartesian_rotation(
+        sat_lat,
+        sat_lon,
+        horizon_radius,
+        steps=int(width * 1.5),  # somewhat arbitrary
+    ):
+        x, y = body.from_latlon(horizon_lat, horizon_lon)
+        stdscr.addstr(y, x, "•", curses.color_pair(239))
+
+
+def cartesian_rotation(lat, lon, r, steps=128):
+    """
+    Internally converts to Cartesian coordinates and applies a rotation
+    matrix to yield a number of points (equal to steps) on the small
+    circle described by the given latlon and radius (the latter being an
+    angle as well).
+
+    Full credit for this goes to github.com/vain.
+    """
+    # Avoid pushing over a pole
+    if lat > 0:
+        slat = degrees(lat) - degrees(r)
+    else:
+        slat = degrees(lat) + degrees(r)
+
+    s_theta = -lat + radians(90)
+    s_phi = lon
+    rx = sin(s_theta) * cos(s_phi)
+    ry = sin(s_theta) * sin(s_phi)
+    rz = cos(s_theta)
+
+    alpha = radians(360.0 / steps)
+
+    m = [
+        rx**2 * (1 - cos(alpha)) + cos(alpha),
+        ry * rx * (1 - cos(alpha)) + rz * sin(alpha),
+        rz * rx * (1 - cos(alpha)) - ry * sin(alpha),
+
+        rx * ry * (1 - cos(alpha)) - rz * sin(alpha),
+        ry**2 * (1 - cos(alpha)) + cos(alpha),
+        rz * ry * (1 - cos(alpha)) + rx * sin(alpha),
+
+        rx * rz * (1 - cos(alpha)) + ry * sin(alpha),
+        ry * rz * (1 - cos(alpha)) - rx * sin(alpha),
+        rz**2 * (1 - cos(alpha)) + cos(alpha),
+    ]
+
+    s_theta = radians(-slat) + radians(90)
+    s_phi = lon
+    px = sin(s_theta) * cos(s_phi)
+    py = sin(s_theta) * sin(s_phi)
+    pz = cos(s_theta)
+
+    for i in range(steps):
+        p2x = px * m[0] + py * m[3] + pz * m[6]
+        p2y = px * m[1] + py * m[4] + pz * m[7]
+        p2z = px * m[2] + py * m[5] + pz * m[8]
+
+        s_theta = acos(p2z)
+        s_phi = atan2(p2y, p2x)
+
+        lat = degrees(radians(90) - s_theta)
+        lon = degrees(s_phi)
+
+        px = p2x
+        py = p2y
+        pz = p2z
+
+        yield lat, lon
 
 
 def draw_satellite(stdscr, body, satellite):
