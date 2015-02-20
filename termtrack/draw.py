@@ -38,91 +38,111 @@ def draw_grid(stdscr, body):
                     stdscr.addstr(y, x, "─", curses.color_pair(234))
 
 
-def draw_info(stdscr, satellite):
+def draw_info(
+        stdscr,
+        time,
+        observer_latitude=None,
+        observer_longitude=None,
+        satellite=None,
+    ):
     height, width = stdscr.getmaxyx()
     width -= 1
-    text_basic = InfoPanel()
-    text_basic.append(satellite.name)
-    text_basic.append("---")
-    text_basic.append("Latitude:")
-    text_basic.append("  {:.6f}°".format(satellite.latitude))
-    text_basic.append("")
-    text_basic.append("Longitude:")
-    text_basic.append("  {:.6f}°".format(satellite.longitude))
-    text_basic.append("")
-    text_basic.append("Altitude:")
-    text_basic.append("  {:,.2f}km".format(satellite.altitude / 1000))
-    text_basic.append("")
-    text_basic.append("Velocity:")
-    text_basic.append("  {:,.2f}m/s".format(satellite.velocity))
-    text_basic.append("")
-    text_basic.append("Orbital period:")
-    text_basic.append("  " + format_seconds(satellite.orbital_period.total_seconds()))
-    text_basic.top = True
-    text_basic.left = True
+    if satellite is not None:
+        text_basic = InfoPanel()
+        text_basic.append(satellite.name)
+        text_basic.append("---")
+        text_basic.append("Latitude:")
+        text_basic.append("  {:.6f}°".format(satellite.latitude))
+        text_basic.append("")
+        text_basic.append("Longitude:")
+        text_basic.append("  {:.6f}°".format(satellite.longitude))
+        text_basic.append("")
+        text_basic.append("Altitude:")
+        text_basic.append("  {:,.2f}km".format(satellite.altitude / 1000))
+        text_basic.append("")
+        text_basic.append("Velocity:")
+        text_basic.append("  {:,.2f}m/s".format(satellite.velocity))
+        text_basic.append("")
+        text_basic.append("Orbital period:")
+        text_basic.append("  " + format_seconds(satellite.orbital_period.total_seconds()))
+        text_basic.top = True
+        text_basic.left = True
 
-    text_apsides = InfoPanel()
-    text_apsides.append("Apogee altitude:")
-    text_apsides.append("  {:,.2f}km".format(satellite.apoapsis_altitude / 1000))
-    text_apsides.append("")
-    text_apsides.append("Perigee altitude:")
-    text_apsides.append("  {:,.2f}km".format(satellite.periapsis_altitude / 1000))
-    text_apsides.append("")
-    text_apsides.append("Time to perigee:")
-    text_apsides.append("  " + format_seconds(satellite.time_to_periapsis.total_seconds()))
-    text_apsides.append("")
-    text_apsides.append("Time since perigee:")
-    text_apsides.append("  " + format_seconds(satellite.time_since_periapsis.total_seconds()))
-    text_apsides.append("")
-    text_apsides.append("Time to apogee:")
-    text_apsides.append("  " + format_seconds(satellite.time_to_apoapsis.total_seconds()))
-    text_apsides.append("")
-    text_apsides.append("Time since apogee:")
-    text_apsides.append("  " + format_seconds(satellite.time_since_apoapsis.total_seconds()))
-    text_apsides.top = False
-    text_apsides.left = False
+        text_apsides = InfoPanel()
+        text_apsides.append("Apogee altitude:")
+        text_apsides.append("  {:,.2f}km".format(satellite.apoapsis_altitude / 1000))
+        text_apsides.append("")
+        text_apsides.append("Perigee altitude:")
+        text_apsides.append("  {:,.2f}km".format(satellite.periapsis_altitude / 1000))
+        text_apsides.append("")
+        text_apsides.append("Time to perigee:")
+        text_apsides.append("  " + format_seconds(satellite.time_to_periapsis.total_seconds()))
+        text_apsides.append("")
+        text_apsides.append("Time since perigee:")
+        text_apsides.append("  " + format_seconds(satellite.time_since_periapsis.total_seconds()))
+        text_apsides.append("")
+        text_apsides.append("Time to apogee:")
+        text_apsides.append("  " + format_seconds(satellite.time_to_apoapsis.total_seconds()))
+        text_apsides.append("")
+        text_apsides.append("Time since apogee:")
+        text_apsides.append("  " + format_seconds(satellite.time_since_apoapsis.total_seconds()))
+        text_apsides.top = False
+        text_apsides.left = False
 
-    text_params = InfoPanel()
-    text_params.append("Inclination:")
-    text_params.append("  {:.4f}°".format(degrees(satellite.inclination)))
-    text_params.append("")
-    text_params.append("RA of asc node:")
-    text_params.append("  {:.4f}°".format(degrees(satellite.right_ascension_of_ascending_node)))
-    text_params.append("")
-    text_params.append("Arg of periapsis:")
-    text_params.append("  {:.4f}°".format(degrees(satellite.argument_of_periapsis)))
-    text_params.append("")
-    text_params.append("Eccentricity:")
-    text_params.append("  {:.7f}".format(satellite.eccentricity))
-    text_params.append("")
-    text_params.append("Semi-major axis:")
-    text_params.append("  {:,.2f}km".format(satellite.semi_major_axis / 1000))
-    text_params.append("")
-    text_params.append("Mean anomaly @epoch:")
-    text_params.append("  {:.4f}°".format(degrees(satellite.mean_anomaly_at_epoch)))
-    text_params.append("")
-    text_params.append("Epoch:")
-    text_params.append(satellite.epoch.strftime("  %Y-%m-%d %H:%M:%S"))
-    text_params.top = False
-    text_params.left = True
+        text_params = InfoPanel()
+        text_params.append("Inclination:")
+        text_params.append("  {:.4f}°".format(degrees(satellite.inclination)))
+        text_params.append("")
+        text_params.append("RA of asc node:")
+        text_params.append("  {:.4f}°".format(degrees(satellite.right_ascension_of_ascending_node)))
+        text_params.append("")
+        text_params.append("Arg of periapsis:")
+        text_params.append("  {:.4f}°".format(degrees(satellite.argument_of_periapsis)))
+        text_params.append("")
+        text_params.append("Eccentricity:")
+        text_params.append("  {:.7f}".format(satellite.eccentricity))
+        text_params.append("")
+        text_params.append("Semi-major axis:")
+        text_params.append("  {:,.2f}km".format(satellite.semi_major_axis / 1000))
+        text_params.append("")
+        text_params.append("Mean anomaly @epoch:")
+        text_params.append("  {:.4f}°".format(degrees(satellite.mean_anomaly_at_epoch)))
+        text_params.append("")
+        text_params.append("Epoch:")
+        text_params.append(satellite.epoch.strftime("  %Y-%m-%d %H:%M:%S"))
+        text_params.append("")
+        text_params.append("Time (UTC):")
+        text_params.append(time.strftime("  %Y-%m-%d %H:%M:%S"))
+        text_params.top = False
+        text_params.left = True
 
-    panels = [text_params, text_apsides, text_basic]
+        panels = [text_params, text_apsides, text_basic]
 
-    if satellite.observer_latitude is not None and satellite.observer_longitude is not None:
+    else:  # no satellite
+        text_time = InfoPanel()
+        text_time.append("Time (UTC):")
+        text_time.append(time.strftime("  %Y-%m-%d %H:%M:%S"))
+        text_time.top = False
+        text_time.left = True
+
+        panels = [text_time]
+
+    if observer_latitude is not None and observer_longitude is not None:
         text_observer = InfoPanel()
         text_observer.append("Observer")
         text_observer.append("---")
         text_observer.append("Latitude:")
-        text_observer.append("  {:.6f}°".format(satellite.observer_latitude))
+        text_observer.append("  {:.6f}°".format(observer_latitude))
         text_observer.append("")
         text_observer.append("Longitude:")
-        text_observer.append("  {:.6f}°".format(satellite.observer_longitude))
-        text_observer.append("")
-        text_observer.append("Azimuth:")
-        text_observer.append("  {:.2f}°".format(degrees(satellite.observer_azimuth)))
-        text_observer.append("")
-        text_observer.append("Altitude:")
-        text_observer.append("  {:.2f}°".format(degrees(satellite.observer_altitude)))
+        text_observer.append("  {:.6f}°".format(observer_longitude))
+        if satellite is not None:
+            text_observer.append("")
+            text_observer.append("Azimuth:")
+            text_observer.append("  {:.2f}°".format(degrees(satellite.observer_azimuth)))
+            text_observer.append("")
+            text_observer.append("Altitude:")
+            text_observer.append("  {:.2f}°".format(degrees(satellite.observer_altitude)))
         text_observer.top = True
         text_observer.left = False
         panels.append(text_observer)
@@ -158,7 +178,7 @@ def draw_info(stdscr, satellite):
             y += 1
 
 
-def draw_map(stdscr, body, night=True, topo=True):
+def draw_map(stdscr, body, time, night=True, topo=True):
     start = datetime.now()
     height, width = stdscr.getmaxyx()
     width -= 1
@@ -188,6 +208,7 @@ def draw_map(stdscr, body, night=True, topo=True):
                 lat, lon = body.to_latlon(x, y)
                 obs.lat = "{:.8f}".format(lat)
                 obs.lon = "{:.8f}".format(lon)
+                obs.date = time
                 sun.compute(obs)
                 # astronomical twilight starts at -18°
                 # -0.3141592 = radians(-18)
@@ -215,19 +236,19 @@ def draw_map(stdscr, body, night=True, topo=True):
     return body
 
 
-def draw_orbits(stdscr, body, satellite, orbit_ascdesc=False, orbits=0, orbit_resolution="/70"):
+def draw_orbits(stdscr, body, satellite, time, orbit_ascdesc=False, orbits=0, orbit_resolution="/70"):
     orbit_offset = timedelta()
     if orbit_resolution.startswith("/"):
         orbit_increment = satellite.orbital_period / int(orbit_resolution[1:])
     else:
         orbit_increment = timedelta(minutes=float(orbit_resolution))
 
-    satellite.compute()
+    satellite.compute(time)
     previous_altitude = satellite.altitude
 
     while orbit_offset < satellite.orbital_period * orbits:
         orbit_offset += orbit_increment
-        satellite.compute(plus_seconds=orbit_offset.total_seconds())
+        satellite.compute(time, plus_seconds=orbit_offset.total_seconds())
 
         if orbit_ascdesc:
             if satellite.altitude - previous_altitude >= 0:
@@ -245,7 +266,7 @@ def draw_orbits(stdscr, body, satellite, orbit_ascdesc=False, orbits=0, orbit_re
             pass
 
     # reset values to current
-    satellite.compute()
+    satellite.compute(time)
 
 
 def draw_apsides(stdscr, body, satellite):

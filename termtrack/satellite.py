@@ -63,7 +63,7 @@ def orbital_velocity(semi_major_axis, altitude, latitude):
 
 
 class EarthSatellite(object):
-    def __init__(self, number, observer_latitude=0, observer_longitude=0, observer_elevation=0):
+    def __init__(self, number, time, observer_latitude=0, observer_longitude=0, observer_elevation=0):
         number = ALIASES.get(number, number)
         raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
         tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
@@ -90,10 +90,10 @@ class EarthSatellite(object):
         self.semi_major_axis = semi_major_axis(self.mean_motion)
         self.apoapsis_altitude = self.semi_major_axis * (1 + self.eccentricity) - earth_radius_at_latitude(self.apoapsis_latitude)
         self.periapsis_altitude = self.semi_major_axis * (1 - self.eccentricity) - earth_radius_at_latitude(self.periapsis_latitude)
-        self.compute()
+        self.compute(time)
 
-    def compute(self, plus_seconds=0):
-        target_time = datetime.utcnow() + timedelta(seconds=plus_seconds)
+    def compute(self, time, plus_seconds=0):
+        target_time = time + timedelta(seconds=plus_seconds)
         self._satellite.compute(target_time)
         self.altitude = self._satellite.elevation
         self.latitude = degrees(self._satellite.sublat)

@@ -33,7 +33,13 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	      g       Toggle latitude/longitude grid
 	      i       Toggle info panels
 	      o       Cycle through drawing 0-3 next orbits
+	      p       Pause/resume
 	      q       Quit
+	      r       Reset plotted time to current
+	      left    Small step back in time
+	      right   Small step forward in time
+	      down    Large step back in time
+	      up      Large step forward in time
 
 	Options:
 	  --apsides                 Draw apoapsis and periapsis markers

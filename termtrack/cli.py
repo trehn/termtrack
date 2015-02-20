@@ -1,4 +1,5 @@
 import curses
+from datetime import datetime, timedelta
 from queue import Empty
 from threading import Thread
 
@@ -23,6 +24,12 @@ from .utils.curses import graceful_ctrlc, input_thread_body, setup
 from .utils.curses import (
     INPUT_CYCLE_ORBITS,
     INPUT_EXIT,
+    INPUT_TIME_MINUS_LONG,
+    INPUT_TIME_MINUS_SHORT,
+    INPUT_TIME_PAUSE,
+    INPUT_TIME_PLUS_LONG,
+    INPUT_TIME_PLUS_SHORT,
+    INPUT_TIME_RESET,
     INPUT_TOGGLE_CROSSHAIR,
     INPUT_TOGGLE_FOOTPRINT,
     INPUT_TOGGLE_GRID,
@@ -64,6 +71,7 @@ def render(
             no_topo = False
             no_you = True
             satellite = None
+
         observer_latitude = None
         observer_longitude = None
         if not no_you and observer is None:
@@ -74,47 +82,101 @@ def render(
             obs_latlon = observer.split()
             observer_latitude = float(obs_latlon[0])
             observer_longitude = float(obs_latlon[1])
-        if satellite is not None:
-            satellite_obj = EarthSatellite(satellite, observer_latitude=observer_latitude, observer_longitude=observer_longitude)
 
         info_panel = False
+        paused = False
+        time_offset = timedelta(0)
+        time = datetime.utcnow() + time_offset
+        force_redraw_while_paused = False
+
+        if satellite is None:
+            satellite_obj = None
+        else:
+            satellite_obj = EarthSatellite(satellite, time, observer_latitude=observer_latitude, observer_longitude=observer_longitude)
+
         while True:
-            with curses_lock:
-                stdscr.erase()
-                body = draw_map(stdscr, body, night=not no_night, topo=not no_topo)
-                if grid:
-                    draw_grid(stdscr, body)
-                if satellite is not None:
-                    satellite_obj.compute()
-                    if crosshair:
-                        draw_satellite_crosshair(stdscr, body, satellite_obj)
-                    if footprint:
-                        draw_footprint(stdscr, body, satellite_obj)
-                    if orbits > 0:
-                        draw_orbits(
+            if not paused:
+                time = datetime.utcnow() + time_offset
+            if not paused or force_redraw_while_paused:
+                with curses_lock:
+                    stdscr.erase()
+                    body = draw_map(stdscr, body, time, night=not no_night, topo=not no_topo)
+                    if grid:
+                        draw_grid(stdscr, body)
+                    if satellite is not None:
+                        satellite_obj.compute(time)
+                        if crosshair:
+                            draw_satellite_crosshair(stdscr, body, satellite_obj)
+                        if footprint:
+                            draw_footprint(stdscr, body, satellite_obj)
+                        if orbits > 0:
+                            draw_orbits(
+                                stdscr,
+                                body,
+                                satellite_obj,
+                                time,
+                                orbits=orbits,
+                                orbit_ascdesc=orbit_ascdesc,
+                                orbit_resolution=orbit_res,
+                            )
+                        if apsides:
+                            draw_apsides(stdscr, body, satellite_obj)
+                        draw_satellite(stdscr, body, satellite_obj)
+                    if observer_latitude is not None and observer_longitude is not None:
+                        draw_location(stdscr, body, observer_latitude, observer_longitude)
+                    if info_panel and satellite is not None:
+                        draw_info(
                             stdscr,
-                            body,
-                            satellite_obj,
-                            orbits=orbits,
-                            orbit_ascdesc=orbit_ascdesc,
-                            orbit_resolution=orbit_res,
+                            time,
+                            observer_latitude=observer_latitude,
+                            observer_longitude=observer_longitude,
+                            satellite=satellite_obj,
                         )
-                    if apsides:
-                        draw_apsides(stdscr, body, satellite_obj)
-                    draw_satellite(stdscr, body, satellite_obj)
-                if observer_latitude is not None and observer_longitude is not None:
-                    draw_location(stdscr, body, observer_latitude, observer_longitude)
-                if info_panel and satellite is not None:
-                    draw_info(stdscr, satellite_obj)
+
+            # get input
             try:
                 input_action = input_queue.get(True, 1/fps)
+                # we just received an input that probably modified how
+                # our screen is supposed to look, ergo we need to redraw
+                force_redraw_while_paused = True
             except Empty:
                 input_action = None
+                force_redraw_while_paused = False
+
+            # react to input
             if input_action == INPUT_CYCLE_ORBITS:
                 orbits += 1
                 orbits = orbits % 4
             elif input_action == INPUT_EXIT:
                 break
+            elif input_action == INPUT_TIME_MINUS_SHORT:
+                if satellite is None:
+                    time_offset -= timedelta(minutes=30)
+                else:
+                    time_offset -= satellite_obj.orbital_period / 20
+            elif input_action == INPUT_TIME_MINUS_LONG:
+                if satellite is None:
+                    time_offset -= timedelta(hours=6)
+                else:
+                    time_offset -= satellite_obj.orbital_period / 2
+            elif input_action == INPUT_TIME_PAUSE:
+                if paused:
+                    time_offset -= datetime.utcnow() - paused
+                    paused = False
+                else:
+                    paused = datetime.utcnow()
+            elif input_action == INPUT_TIME_PLUS_SHORT:
+                if satellite is None:
+                    time_offset += timedelta(minutes=30)
+                else:
+                    time_offset += satellite_obj.orbital_period / 20
+            elif input_action == INPUT_TIME_PLUS_LONG:
+                if satellite is None:
+                    time_offset += timedelta(hours=6)
+                else:
+                    time_offset += satellite_obj.orbital_period / 2
+            elif input_action == INPUT_TIME_RESET:
+                time_offset = timedelta(0)
             elif input_action == INPUT_TOGGLE_CROSSHAIR:
                 crosshair = not crosshair
             elif input_action == INPUT_TOGGLE_FOOTPRINT:
@@ -193,6 +255,12 @@ def main(**kwargs):
     \tg\tToggle latitude/longitude grid
     \ti\tToggle info panels
     \to\tCycle through drawing 0-3 next orbits
+    \tp\tPause/resume
     \tq\tQuit
+    \tr\tReset plotted time to current
+    \tleft\tSmall step back in time
+    \tright\tSmall step forward in time
+    \tdown\tLarge step back in time
+    \tup\tLarge step forward in time
     """
     curses.wrapper(render, **kwargs)
