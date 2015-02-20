@@ -95,6 +95,7 @@ def render(
             satellite_obj = EarthSatellite(satellite, time, observer_latitude=observer_latitude, observer_longitude=observer_longitude)
 
         while True:
+            draw_start = datetime.now()
             if not paused:
                 time = datetime.utcnow() + time_offset
             if not paused or force_redraw_while_paused:
@@ -132,10 +133,11 @@ def render(
                             observer_longitude=observer_longitude,
                             satellite=satellite_obj,
                         )
+            draw_time = (datetime.now() - draw_start).total_seconds()
 
             # get input
             try:
-                input_action = input_queue.get(True, 1/fps)
+                input_action = input_queue.get(True, max(0, 1/fps - draw_time))
                 # we just received an input that probably modified how
                 # our screen is supposed to look, ergo we need to redraw
                 force_redraw_while_paused = True
