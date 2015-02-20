@@ -48,6 +48,7 @@ def render(
         footprint=False,
         fps=1,
         grid=False,
+        info=False,
         no_night=False,
         no_topo=False,
         no_you=False,
@@ -83,7 +84,6 @@ def render(
             observer_latitude = float(obs_latlon[0])
             observer_longitude = float(obs_latlon[1])
 
-        info_panel = False
         paused = False
         time_offset = timedelta(0)
         time = datetime.utcnow() + time_offset
@@ -124,7 +124,7 @@ def render(
                         draw_satellite(stdscr, body, satellite_obj)
                     if observer_latitude is not None and observer_longitude is not None:
                         draw_location(stdscr, body, observer_latitude, observer_longitude)
-                    if info_panel and satellite is not None:
+                    if info:
                         draw_info(
                             stdscr,
                             time,
@@ -184,7 +184,7 @@ def render(
             elif input_action == INPUT_TOGGLE_GRID:
                 grid = not grid
             elif input_action == INPUT_TOGGLE_INFO:
-                info_panel = not info_panel
+                info = not info
             elif input_action == INPUT_TOGGLE_ORBIT_APSIDES:
                 apsides = not apsides
             elif input_action == INPUT_TOGGLE_ORBIT_ASCDESC:
@@ -215,6 +215,8 @@ def print_version(ctx, param, value):
               help="Frames per second (defaults to 1)")
 @click.option("-g", "--grid", is_flag=True, default=False,
               help="Draw latitude/longitude grid")
+@click.option("--info", is_flag=True, default=False,
+              help="Show info panels")
 @click.option("-N", "--no-night", is_flag=True, default=False,
               help="Don't shade night side")
 @click.option("-o", "--orbits", default=0, metavar="N",

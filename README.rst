@@ -49,6 +49,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  -f, --footprint           Draw satellite footprint/horizon
 	  --fps N                   Frames per second (defaults to 1)
 	  -g, --grid                Draw latitude/longitude grid
+	  --info                    Show info panels
 	  -N, --no-night            Don't shade night side
 	  -o, --orbits N            Draw this many orbits ahead of the satellite
 	  --orbit-ascdesc           Draw orbits with ascent/descent markers
