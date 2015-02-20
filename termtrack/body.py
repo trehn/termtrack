@@ -104,8 +104,6 @@ class Body(object):
 
 
 class Earth(Body):
-    LAT_CROPPED_MIN = -60
-    LAT_CROPPED_MAX = 85
     NAME = "Earth"
     COLORMAP = "earth.jpg"
     SHAPEFILE = "ne_110m_land.shp"
