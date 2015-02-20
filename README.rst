@@ -54,7 +54,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  --version                 Show version and exit
 	  --help                    Show this message and exit
 
-Credit goes to `vain/asciiworld <https://github.com/vain/asciiworld>`_ for inspiration.
+Credit goes to `vain/asciiworld <https://github.com/vain/asciiworld>`_ for inspiration and some tasty pieces of code.
 
 ------------------------------------------------------------------------
 

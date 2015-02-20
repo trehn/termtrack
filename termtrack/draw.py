@@ -259,36 +259,42 @@ def cartesian_rotation(lat, lon, r, steps=128):
     circle described by the given latlon and radius (the latter being an
     angle as well).
 
-    Full credit for this goes to github.com/vain.
+    Taken almost verbatim from github.com/vain/asciiworld.
     """
-    # Avoid pushing over a pole
+    # Get latitude of one point on the small circle. We can easily do
+    # this by adjusting the latitude but we have to avoid pushing over a
+    # pole.
     if lat > 0:
         slat = degrees(lat) - degrees(r)
     else:
         slat = degrees(lat) + degrees(r)
 
+    # Geographic coordinates to spherical coordinates.
     s_theta = -lat + radians(90)
     s_phi = lon
+
+    # Cartesian coordinates of rotation axis.
     rx = sin(s_theta) * cos(s_phi)
     ry = sin(s_theta) * sin(s_phi)
     rz = cos(s_theta)
 
+    # Rotation matrix around r{x,y,z} by alpha.
     alpha = radians(360.0 / steps)
 
-    m = [
-        rx**2 * (1 - cos(alpha)) + cos(alpha),
-        ry * rx * (1 - cos(alpha)) + rz * sin(alpha),
-        rz * rx * (1 - cos(alpha)) - ry * sin(alpha),
+    M = []
+    M.append(rx**2 * (1 - cos(alpha)) + cos(alpha))
+    M.append(ry * rx * (1 - cos(alpha)) + rz * sin(alpha))
+    M.append(rz * rx * (1 - cos(alpha)) - ry * sin(alpha))
 
-        rx * ry * (1 - cos(alpha)) - rz * sin(alpha),
-        ry**2 * (1 - cos(alpha)) + cos(alpha),
-        rz * ry * (1 - cos(alpha)) + rx * sin(alpha),
+    M.append(rx * ry * (1 - cos(alpha)) - rz * sin(alpha))
+    M.append(ry**2 * (1 - cos(alpha)) + cos(alpha))
+    M.append(rz * ry * (1 - cos(alpha)) + rx * sin(alpha))
 
-        rx * rz * (1 - cos(alpha)) + ry * sin(alpha),
-        ry * rz * (1 - cos(alpha)) - rx * sin(alpha),
-        rz**2 * (1 - cos(alpha)) + cos(alpha),
-    ]
+    M.append(rx * rz * (1 - cos(alpha)) + ry * sin(alpha))
+    M.append(ry * rz * (1 - cos(alpha)) - rx * sin(alpha))
+    M.append(rz**2 * (1 - cos(alpha)) + cos(alpha))
 
+    # Cartesian coordinates of initial vector.
     s_theta = radians(-slat) + radians(90)
     s_phi = lon
     px = sin(s_theta) * cos(s_phi)
@@ -296,16 +302,24 @@ def cartesian_rotation(lat, lon, r, steps=128):
     pz = cos(s_theta)
 
     for i in range(steps):
-        p2x = px * m[0] + py * m[3] + pz * m[6]
-        p2y = px * m[1] + py * m[4] + pz * m[7]
-        p2z = px * m[2] + py * m[5] + pz * m[8]
+        # Rotate p{x,y,z}.
+        p2x = px * M[0] + py * M[3] + pz * M[6]
+        p2y = px * M[1] + py * M[4] + pz * M[7]
+        p2z = px * M[2] + py * M[5] + pz * M[8]
 
-        s_theta = acos(p2z)
+        # For acos(), force p2z back into [-1, 1] which *might* happen
+        # due to precision errors.
+        p2z_fixed = max(-1, min(1, p2z))
+
+        # Convert back to spherical coordinates and then geographic
+        # coordinates.
+        s_theta = acos(p2z_fixed)
         s_phi = atan2(p2y, p2x)
 
         lat = degrees(radians(90) - s_theta)
         lon = degrees(s_phi)
 
+        # Use rotated p{x,y,z} as basis for next rotation.
         px = p2x
         py = p2y
         pz = p2z
