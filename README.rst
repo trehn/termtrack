@@ -37,7 +37,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  -f, --fps N               Frames per second (defaults to 1)
 	  -N, --no-night            Don't shade night side
 	  -o, --orbits N            Draw this many orbits ahead of the satellite
-	  --orbit-ascdesc           Draw orbit with ascent/descent markers
+	  --orbit-ascdesc           Draw orbits with ascent/descent markers
 	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
 	                            observer; overrides IP-geolocation
 	  -r, --orbit-res [/]N      Set distance of orbit markers: 'N' means N

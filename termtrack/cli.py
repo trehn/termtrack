@@ -133,7 +133,7 @@ def print_version(ctx, param, value):
 @click.option("-o", "--orbits", default=0, metavar="N",
               help="Draw this many orbits ahead of the satellite")
 @click.option("--orbit-ascdesc", is_flag=True, default=False,
-              help="Draw orbit with ascent/descent markers")
+              help="Draw orbits with ascent/descent markers")
 @click.option("-O", "--observer", default=None, metavar="'LAT LON'",
               help="Space-separated latitude and longitude of an "
                    "observer; overrides IP-geolocation")
