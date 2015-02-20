@@ -177,6 +177,8 @@ def render(
                     time_offset += satellite_obj.orbital_period / 2
             elif input_action == INPUT_TIME_RESET:
                 time_offset = timedelta(0)
+                if paused:
+                    paused = time = datetime.utcnow()
             elif input_action == INPUT_TOGGLE_CROSSHAIR:
                 crosshair = not crosshair
             elif input_action == INPUT_TOGGLE_FOOTPRINT:
