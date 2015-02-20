@@ -186,7 +186,7 @@ def main(**kwargs):
     \ttiangong\tTiangong-1 (Chinese space station)
     \b
     Hotkeys:
-    \ta\tToogle apsides markers
+    \ta\tToggle apsides markers
     \td\tToggle ascent/descent markers
     \tc\tToggle crosshair
     \tf\tToggle footprint (satellite horizon)
