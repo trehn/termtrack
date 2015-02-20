@@ -20,8 +20,13 @@ from .draw import (
 from .satellite import EarthSatellite
 from .utils.curses import graceful_ctrlc, input_thread_body, setup
 from .utils.curses import (
+    INPUT_CYCLE_ORBITS,
     INPUT_EXIT,
+    INPUT_TOGGLE_CROSSHAIR,
+    INPUT_TOGGLE_FOOTPRINT,
     INPUT_TOGGLE_INFO,
+    INPUT_TOGGLE_ORBIT_APSIDES,
+    INPUT_TOGGLE_ORBIT_ASCDESC,
 )
 
 
@@ -100,10 +105,21 @@ def render(
                 input_action = input_queue.get(True, 1/fps)
             except Empty:
                 input_action = None
-            if input_action == INPUT_EXIT:
+            if input_action == INPUT_CYCLE_ORBITS:
+                orbits += 1
+                orbits = orbits % 4
+            elif input_action == INPUT_EXIT:
                 break
+            elif input_action == INPUT_TOGGLE_CROSSHAIR:
+                crosshair = not crosshair
+            elif input_action == INPUT_TOGGLE_FOOTPRINT:
+                footprint = not footprint
             elif input_action == INPUT_TOGGLE_INFO:
                 info_panel = not info_panel
+            elif input_action == INPUT_TOGGLE_ORBIT_APSIDES:
+                apsides = not apsides
+            elif input_action == INPUT_TOGGLE_ORBIT_ASCDESC:
+                orbit_ascdesc = not orbit_ascdesc
     finally:
         quit_event.set()
         input_thread.join()
@@ -161,7 +177,12 @@ def main(**kwargs):
     \ttiangong\tTiangong-1 (Chinese space station)
     \b
     Hotkeys:
+    \ta\tToogle apsides markers
+    \td\tToggle ascent/descent markers
+    \tc\tToggle crosshair
+    \tf\tToggle footprint (satellite horizon)
     \ti\tToggle info panels
+    \to\tCycle through drawing 0-3 next orbits
     \tq\tQuit
     """
     curses.wrapper(render, **kwargs)

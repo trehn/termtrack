@@ -4,8 +4,23 @@ from threading import Event, Lock
 from time import sleep
 
 
-INPUT_EXIT = 1
-INPUT_TOGGLE_INFO = 2
+INPUT_CYCLE_ORBITS = 1
+INPUT_EXIT = 2
+INPUT_TOGGLE_CROSSHAIR = 3
+INPUT_TOGGLE_FOOTPRINT = 4
+INPUT_TOGGLE_INFO = 5
+INPUT_TOGGLE_ORBIT_APSIDES = 6
+INPUT_TOGGLE_ORBIT_ASCDESC = 7
+
+KEYMAP = {
+    "a": INPUT_TOGGLE_ORBIT_APSIDES,
+    "d": INPUT_TOGGLE_ORBIT_ASCDESC,
+    "c": INPUT_TOGGLE_CROSSHAIR,
+    "f": INPUT_TOGGLE_FOOTPRINT,
+    "i": INPUT_TOGGLE_INFO,
+    "o": INPUT_CYCLE_ORBITS,
+    "q": INPUT_EXIT,
+}
 
 RGB_256 = (
     ((0, 0, 0), 1),
@@ -315,8 +330,9 @@ def input_thread_body(stdscr, input_queue, quit_event, curses_lock):
                 key = stdscr.getkey()
         except:
             key = None
-        if key in ("q", "Q"):
-            input_queue.put(INPUT_EXIT)
-        elif key == "i":
-            input_queue.put(INPUT_TOGGLE_INFO)
+        try:
+            input_queue.put(KEYMAP[key])
+        except KeyError:
+            # key not bound
+            pass
         sleep(0.01)

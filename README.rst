@@ -26,7 +26,12 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	      tiangong        Tiangong-1 (Chinese space station)
 
 	  Hotkeys:
+	      a       Toogle apsides markers
+	      d       Toggle ascent/descent markers
+	      c       Toggle crosshair
+	      f       Toggle footprint (satellite horizon)
 	      i       Toggle info panels
+	      o       Cycle through drawing 0-3 next orbits
 	      q       Quit
 
 	Options:
