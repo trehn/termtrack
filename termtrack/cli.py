@@ -187,8 +187,8 @@ def main(**kwargs):
     \b
     Hotkeys:
     \ta\tToggle apsides markers
-    \td\tToggle ascent/descent markers
     \tc\tToggle crosshair
+    \td\tToggle ascent/descent markers
     \tf\tToggle footprint (satellite horizon)
     \tg\tToggle latitude/longitude grid
     \ti\tToggle info panels

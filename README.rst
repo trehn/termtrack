@@ -27,8 +27,8 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 
 	  Hotkeys:
 	      a       Toggle apsides markers
-	      d       Toggle ascent/descent markers
 	      c       Toggle crosshair
+	      d       Toggle ascent/descent markers
 	      f       Toggle footprint (satellite horizon)
 	      g       Toggle latitude/longitude grid
 	      i       Toggle info panels
