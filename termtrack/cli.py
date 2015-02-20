@@ -10,6 +10,7 @@ from .body import BODY_MAP
 from .draw import (
     draw_apsides,
     draw_footprint,
+    draw_grid,
     draw_info,
     draw_location,
     draw_map,
@@ -24,6 +25,7 @@ from .utils.curses import (
     INPUT_EXIT,
     INPUT_TOGGLE_CROSSHAIR,
     INPUT_TOGGLE_FOOTPRINT,
+    INPUT_TOGGLE_GRID,
     INPUT_TOGGLE_INFO,
     INPUT_TOGGLE_ORBIT_APSIDES,
     INPUT_TOGGLE_ORBIT_ASCDESC,
@@ -38,6 +40,7 @@ def render(
         crosshair=False,
         footprint=False,
         fps=1,
+        grid=False,
         no_night=False,
         no_topo=False,
         no_you=False,
@@ -79,6 +82,8 @@ def render(
             with curses_lock:
                 stdscr.erase()
                 body = draw_map(stdscr, body, night=not no_night, topo=not no_topo)
+                if grid:
+                    draw_grid(stdscr, body)
                 if satellite is not None:
                     satellite_obj.compute()
                     if crosshair:
@@ -114,6 +119,8 @@ def render(
                 crosshair = not crosshair
             elif input_action == INPUT_TOGGLE_FOOTPRINT:
                 footprint = not footprint
+            elif input_action == INPUT_TOGGLE_GRID:
+                grid = not grid
             elif input_action == INPUT_TOGGLE_INFO:
                 info_panel = not info_panel
             elif input_action == INPUT_TOGGLE_ORBIT_APSIDES:
@@ -144,6 +151,8 @@ def print_version(ctx, param, value):
               help="Draw satellite footprint/horizon")
 @click.option("--fps", default=1, metavar="N",
               help="Frames per second (defaults to 1)")
+@click.option("-g", "--grid", is_flag=True, default=False,
+              help="Draw latitude/longitude grid")
 @click.option("-N", "--no-night", is_flag=True, default=False,
               help="Don't shade night side")
 @click.option("-o", "--orbits", default=0, metavar="N",
@@ -181,6 +190,7 @@ def main(**kwargs):
     \td\tToggle ascent/descent markers
     \tc\tToggle crosshair
     \tf\tToggle footprint (satellite horizon)
+    \tg\tToggle latitude/longitude grid
     \ti\tToggle info panels
     \to\tCycle through drawing 0-3 next orbits
     \tq\tQuit

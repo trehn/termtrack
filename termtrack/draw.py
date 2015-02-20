@@ -9,8 +9,33 @@ from .utils.curses import closest_color
 from .utils.text import format_seconds
 
 
+GRID_LATITUDES = (60, 30, 0, -30, -60)
+GRID_LONGITUDES = (150, 120, 90, 60, 30, 0, -30, -60, -90, -120, -150)
+
+
 class InfoPanel(list):
     pass
+
+
+def draw_grid(stdscr, body):
+    latitudes = []
+    longitudes = []
+    for lat in GRID_LATITUDES:
+        x, y = body.from_latlon(lat, 0)
+        latitudes.append(y)
+    for lon in GRID_LONGITUDES:
+        x, y = body.from_latlon(0, lon)
+        longitudes.append(x)
+
+    for x in range(body.width-1):
+        for y in range(body.height):
+            if body.map[x][y][3] is None:
+                if x in longitudes and y in latitudes:
+                    stdscr.addstr(y, x, "+", curses.color_pair(234))
+                elif x in longitudes:
+                    stdscr.addstr(y, x, "|", curses.color_pair(234))
+                elif y in latitudes:
+                    stdscr.addstr(y, x, "─", curses.color_pair(234))
 
 
 def draw_info(stdscr, satellite):

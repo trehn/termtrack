@@ -30,6 +30,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	      d       Toggle ascent/descent markers
 	      c       Toggle crosshair
 	      f       Toggle footprint (satellite horizon)
+	      g       Toggle latitude/longitude grid
 	      i       Toggle info panels
 	      o       Cycle through drawing 0-3 next orbits
 	      q       Quit
@@ -41,6 +42,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  -c, --crosshair           Draw crosshair around satellite location
 	  -f, --footprint           Draw satellite footprint/horizon
 	  --fps N                   Frames per second (defaults to 1)
+	  -g, --grid                Draw latitude/longitude grid
 	  -N, --no-night            Don't shade night side
 	  -o, --orbits N            Draw this many orbits ahead of the satellite
 	  --orbit-ascdesc           Draw orbits with ascent/descent markers
