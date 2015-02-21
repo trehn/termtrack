@@ -1,11 +1,17 @@
 import curses
 from datetime import datetime, timedelta
-from math import acos, atan2, cos, degrees, radians, sin
+from math import acos, cos, degrees, radians, sin
 
 import ephem
 
 from .satellite import earth_radius_at_latitude
 from .utils.curses import closest_color
+from .utils.geometry import (
+    cartesian_to_latlon,
+    latlon_to_cartesian,
+    latlon_to_spherical,
+    spherical_to_cartesian,
+)
 from .utils.text import format_seconds
 
 
@@ -286,11 +292,9 @@ def draw_footprint(stdscr, body, satellite):
     height, width = stdscr.getmaxyx()
     earth_radius = earth_radius_at_latitude(satellite.latitude)
     horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
-    sat_lat = radians(satellite.latitude)
-    sat_lon = radians(satellite.longitude)
     for horizon_lat, horizon_lon in cartesian_rotation(
-        sat_lat,
-        sat_lon,
+        satellite.latitude,
+        satellite.longitude,
         horizon_radius,
         steps=int(width * 1.5),  # somewhat arbitrary
     ):
@@ -305,27 +309,24 @@ def cartesian_rotation(lat, lon, r, steps=128):
     circle described by the given latlon and radius (the latter being an
     angle as well).
 
-    Taken almost verbatim from github.com/vain/asciiworld.
+    Math from github.com/vain/asciiworld.
     """
     # Get latitude of one point on the small circle. We can easily do
     # this by adjusting the latitude but we have to avoid pushing over a
     # pole.
     if lat > 0:
-        slat = degrees(lat) - degrees(r)
+        slat = lat - degrees(r)
     else:
-        slat = degrees(lat) + degrees(r)
+        slat = lat + degrees(r)
 
     # Geographic coordinates to spherical coordinates.
-    s_theta = -lat + radians(90)
-    s_phi = lon
+    s_theta, s_phi = latlon_to_spherical(lat, lon)
 
     # Cartesian coordinates of rotation axis.
-    rx = sin(s_theta) * cos(s_phi)
-    ry = sin(s_theta) * sin(s_phi)
-    rz = cos(s_theta)
+    rx, ry, rz = spherical_to_cartesian(s_theta, s_phi)
 
     # Rotation matrix around r{x,y,z} by alpha.
-    alpha = radians(360.0 / steps)
+    alpha = radians(360 / steps)
 
     M = []
     M.append(rx**2 * (1 - cos(alpha)) + cos(alpha))
@@ -341,11 +342,7 @@ def cartesian_rotation(lat, lon, r, steps=128):
     M.append(rz**2 * (1 - cos(alpha)) + cos(alpha))
 
     # Cartesian coordinates of initial vector.
-    s_theta = radians(-slat) + radians(90)
-    s_phi = lon
-    px = sin(s_theta) * cos(s_phi)
-    py = sin(s_theta) * sin(s_phi)
-    pz = cos(s_theta)
+    px, py, pz = latlon_to_cartesian(slat, lon)
 
     for i in range(steps):
         # Rotate p{x,y,z}.
@@ -357,20 +354,12 @@ def cartesian_rotation(lat, lon, r, steps=128):
         # due to precision errors.
         p2z_fixed = max(-1, min(1, p2z))
 
-        # Convert back to spherical coordinates and then geographic
-        # coordinates.
-        s_theta = acos(p2z_fixed)
-        s_phi = atan2(p2y, p2x)
-
-        lat = degrees(radians(90) - s_theta)
-        lon = degrees(s_phi)
-
         # Use rotated p{x,y,z} as basis for next rotation.
         px = p2x
         py = p2y
         pz = p2z
 
-        yield lat, lon
+        yield cartesian_to_latlon(p2x, p2y, p2z_fixed)
 
 
 def draw_satellite(stdscr, body, satellite):
