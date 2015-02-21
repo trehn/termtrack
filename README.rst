@@ -27,7 +27,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 
 	  Hotkeys:
 	      a       Toggle apsides markers
-	      c       Toggle crosshair
+	      c       Toggle next-orbit coverage overlay (warning: slow)
 	      d       Toggle ascent/descent markers
 	      f       Toggle footprint (satellite horizon)
 	      g       Toggle latitude/longitude grid
@@ -36,6 +36,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	      p       Pause/resume
 	      q       Quit
 	      r       Reset plotted time to current
+	      x       Toggle crosshair
 	      left    Small step back in time
 	      right   Small step forward in time
 	      down    Large step back in time
@@ -45,7 +46,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  --apsides                 Draw apoapsis and periapsis markers
 	  -b, --body BODY           Which celestial body to draw: Earth, Moon or Mars
 	                            (defaults to Earth)
-	  -c, --crosshair           Draw crosshair around satellite location
+	  --coverage                Show next-orbit coverage overlay (warning: slow)
 	  -f, --footprint           Draw satellite footprint/horizon
 	  --fps N                   Frames per second (defaults to 1)
 	  -g, --grid                Draw latitude/longitude grid
@@ -59,6 +60,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	                            minutes, '/N' means 1/Nth of orbital period
 	                            (defaults to /70)
 	  -T, --no-topo             Disable rendering of topographical features
+	  -x, --crosshair           Draw crosshair around satellite location
 	  -Y, --no-you              Don't auto-detect your location as observer
 	  --version                 Show version and exit
 	  --help                    Show this message and exit

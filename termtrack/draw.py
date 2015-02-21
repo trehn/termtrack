@@ -1,11 +1,11 @@
 import curses
 from datetime import datetime, timedelta
-from math import acos, cos, degrees, radians, sin
+from math import acos, copysign, cos, degrees, pi, radians, sin, sqrt
 
 import ephem
 
 from .satellite import earth_radius_at_latitude
-from .utils.curses import closest_color
+from .utils.curses import bresenham, closest_color, fill_outline
 from .utils.geometry import (
     cartesian_to_latlon,
     latlon_to_cartesian,
@@ -21,6 +21,47 @@ GRID_LONGITUDES = (150, 120, 90, 60, 30, 0, -30, -60, -90, -120, -150)
 
 class InfoPanel(list):
     pass
+
+
+def draw_coverage(stdscr, body, satellite, time, steps=100):
+    interval = satellite.orbital_period.total_seconds() / steps
+    footprints = set([])
+
+    for i in range(steps):
+        satellite.compute(time, plus_seconds=interval * i)
+        earth_radius = earth_radius_at_latitude(satellite.latitude)
+        horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
+        sat_xy = body.from_latlon(satellite.latitude, satellite.longitude)
+        sat_footprints = []
+
+        for hx, hy, hz in cartesian_rotation(
+            satellite.latitude,
+            satellite.longitude,
+            horizon_radius,
+            steps=int(body.width / 2),  # somewhat arbitrary
+        ):
+            sat_footprints.append(body.from_latlon(*cartesian_to_latlon(hx, hy, hz)))
+
+        footprints.update(fill_outline(
+            sat_xy,
+            set(bresenham(sat_footprints, body.width, body.height, connect_ends=True)),
+            body.width,
+            body.height,
+        ))
+
+    # now we have gathered the swept area, but we want to hide areas
+    # *not* covered during the orbit
+    inverted_footprints = []
+    for x in range(body.width):
+        for y in range(body.height):
+            if (x, y) not in footprints:
+                inverted_footprints.append((x, y))
+
+    for x, y in inverted_footprints:
+        stdscr.addstr(y, x, "•", curses.color_pair(94))
+
+    # reset satellite to current position
+    satellite.compute(time)
 
 
 def draw_grid(stdscr, body):

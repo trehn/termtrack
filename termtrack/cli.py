@@ -10,6 +10,7 @@ from . import VERSION_STRING
 from .body import BODY_MAP
 from .draw import (
     draw_apsides,
+    draw_coverage,
     draw_footprint,
     draw_grid,
     draw_info,
@@ -30,6 +31,7 @@ from .utils.curses import (
     INPUT_TIME_PLUS_LONG,
     INPUT_TIME_PLUS_SHORT,
     INPUT_TIME_RESET,
+    INPUT_TOGGLE_COVERAGE,
     INPUT_TOGGLE_CROSSHAIR,
     INPUT_TOGGLE_FOOTPRINT,
     INPUT_TOGGLE_GRID,
@@ -44,6 +46,7 @@ def render(
         stdscr,
         apsides=False,
         body="earth",
+        coverage=False,
         crosshair=False,
         footprint=False,
         fps=1,
@@ -108,6 +111,13 @@ def render(
                         satellite_obj.compute(time)
                         if crosshair:
                             draw_satellite_crosshair(stdscr, body, satellite_obj)
+                        if coverage:
+                            draw_coverage(
+                                stdscr,
+                                body,
+                                satellite_obj,
+                                time,
+                            )
                         if footprint:
                             draw_footprint(stdscr, body, satellite_obj)
                         if orbits > 0:
@@ -181,6 +191,8 @@ def render(
                 time_offset = timedelta(0)
                 if paused:
                     paused = time = datetime.utcnow()
+            elif input_action == INPUT_TOGGLE_COVERAGE:
+                coverage = not coverage
             elif input_action == INPUT_TOGGLE_CROSSHAIR:
                 crosshair = not crosshair
             elif input_action == INPUT_TOGGLE_FOOTPRINT:
@@ -211,8 +223,8 @@ def print_version(ctx, param, value):
 @click.option("-b", "--body", default="earth", metavar="BODY",
               help="Which celestial body to draw: Earth, Moon or Mars "
                    "(defaults to Earth)")
-@click.option("-c", "--crosshair", is_flag=True, default=False,
-              help="Draw crosshair around satellite location")
+@click.option("--coverage", is_flag=True, default=False,
+              help="Show next-orbit coverage overlay (warning: slow)")
 @click.option("-f", "--footprint", is_flag=True, default=False,
               help="Draw satellite footprint/horizon")
 @click.option("--fps", default=1, metavar="N",
@@ -235,6 +247,8 @@ def print_version(ctx, param, value):
                    "'/N' means 1/Nth of orbital period (defaults to /70)")
 @click.option("-T", "--no-topo", is_flag=True, default=False,
               help="Disable rendering of topographical features")
+@click.option("-x", "--crosshair", is_flag=True, default=False,
+              help="Draw crosshair around satellite location")
 @click.option("-Y", "--no-you", is_flag=True, default=False,
               help="Don't auto-detect your location as observer")
 @click.option("--version", is_flag=True, callback=print_version,
@@ -255,7 +269,7 @@ def main(**kwargs):
     \b
     Hotkeys:
     \ta\tToggle apsides markers
-    \tc\tToggle crosshair
+    \tc\tToggle next-orbit coverage overlay (warning: slow)
     \td\tToggle ascent/descent markers
     \tf\tToggle footprint (satellite horizon)
     \tg\tToggle latitude/longitude grid
@@ -264,6 +278,7 @@ def main(**kwargs):
     \tp\tPause/resume
     \tq\tQuit
     \tr\tReset plotted time to current
+    \tx\tToggle crosshair
     \tleft\tSmall step back in time
     \tright\tSmall step forward in time
     \tdown\tLarge step back in time

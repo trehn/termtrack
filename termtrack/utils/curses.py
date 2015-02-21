@@ -3,6 +3,8 @@ from queue import Queue
 from threading import Event, Lock
 from time import sleep
 
+from .geometry import point_distance
+
 
 INPUT_CYCLE_ORBITS = 1
 INPUT_EXIT = 2
@@ -12,16 +14,17 @@ INPUT_TIME_PAUSE = 5
 INPUT_TIME_PLUS_LONG = 6
 INPUT_TIME_PLUS_SHORT = 7
 INPUT_TIME_RESET = 8
-INPUT_TOGGLE_CROSSHAIR = 9
-INPUT_TOGGLE_FOOTPRINT = 10
-INPUT_TOGGLE_GRID = 11
-INPUT_TOGGLE_INFO = 12
-INPUT_TOGGLE_ORBIT_APSIDES = 13
-INPUT_TOGGLE_ORBIT_ASCDESC = 14
+INPUT_TOGGLE_COVERAGE = 9
+INPUT_TOGGLE_CROSSHAIR = 10
+INPUT_TOGGLE_FOOTPRINT = 11
+INPUT_TOGGLE_GRID = 12
+INPUT_TOGGLE_INFO = 13
+INPUT_TOGGLE_ORBIT_APSIDES = 14
+INPUT_TOGGLE_ORBIT_ASCDESC = 15
 
 KEYMAP = {
     "a": INPUT_TOGGLE_ORBIT_APSIDES,
-    "c": INPUT_TOGGLE_CROSSHAIR,
+    "c": INPUT_TOGGLE_COVERAGE,
     "d": INPUT_TOGGLE_ORBIT_ASCDESC,
     "f": INPUT_TOGGLE_FOOTPRINT,
     "g": INPUT_TOGGLE_GRID,
@@ -34,6 +37,7 @@ KEYMAP = {
     "p": INPUT_TIME_PAUSE,
     "q": INPUT_EXIT,
     "r": INPUT_TIME_RESET,
+    "x": INPUT_TOGGLE_CROSSHAIR,
 }
 
 RGB_256 = (
@@ -294,6 +298,85 @@ RGB_256 = (
 RGB_CACHE = {}
 
 
+def bresenham(points, width, height, connect_ends=True):
+    """
+    Takes a sequential(!) list of points within a wrapping canvas of the
+    given dimensions and yields a new series of points including the
+    original points with filler points added in between to create
+    continous lines.
+    """
+    if connect_ends:
+        previous_point = points[-1]
+    else:
+        previous_point = None
+    connected_points = []
+
+    for point in points:
+        connected_points.append(point)
+        if previous_point is None:
+            previous_point = point
+            continue
+        # since we have a wrapping canvas, there are five straight paths
+        # between every two points: one inside the canvas and four going
+        # off to each side
+        # our first task is to find out which one is the shortest
+        candidate_points = (
+            (point[0], point[1]),  # inside canvas
+            (point[0] + width, point[1]),  # through right edge
+            (point[0] - width, point[1]),  # through left edge
+            (point[0], point[1] + height),  # through bottom edge
+            (point[0], point[1] - height),  # through top edge
+        )
+        smallest_distance = float("inf")
+        closest_point = None
+        for candidate_point in candidate_points:
+            distance = point_distance(previous_point, candidate_point)
+            if distance < smallest_distance:
+                closest_point = candidate_point
+                smallest_distance = distance
+
+        # now that we know the direction we have to go, we can start the
+        # actual Bresenham magic
+
+        p1x, p1y = previous_point
+        p2x, p2y = closest_point
+
+        delta_x = abs(p2x - p1x)
+        delta_y = abs(p2y - p1y)
+
+        points = []
+        steep = delta_y > delta_x
+        if steep:
+            p1x, p1y = p1y, p1x
+            p2x, p2y = p2y, p2x
+        if p1x > p2x:
+            p1x, p2x = p2x, p1x
+            p1y, p2y = p2y, p1y
+
+        delta_x = p2x - p1x
+        delta_y = abs(p2y - p1y)
+
+        error = delta_x // 2
+
+        step_y = 1 if p1y < p2y else -1
+        y = p1y
+
+        for x in range(p1x, p2x + 1):
+            if steep:
+                connected_points.append((y, x))
+            else:
+                connected_points.append((x, y))
+            error -= delta_y
+            if error < 0:
+                y += step_y
+                error += delta_x
+
+        previous_point = point
+
+    for point in set(connected_points):
+        yield point_wrap(point[0], point[1], width, height)
+
+
 def closest_color(r, g, b):
     if (r, g, b) in RGB_CACHE.keys():
         return RGB_CACHE[(r, g, b)]
@@ -308,8 +391,33 @@ def closest_color(r, g, b):
     return best_candidate
 
 
+def fill_outline(center, outline_points, width, height):
+    filled_points = set([])
+    outline_points.add(center)
+    for adjacent_point in get_adjacent(center[0], center[1], width, height):
+        if adjacent_point not in outline_points:
+            filled_points.add(adjacent_point)
+            outline_points.add(adjacent_point)
+    recursive_fills = set([])
+    for filled_point in filled_points:
+        recursive_fills.update(fill_outline(filled_point, outline_points, width, height))
+    return outline_points.union(recursive_fills)
 
 
+def get_adjacent(x, y, width, height):
+    """
+    Returns a list of tuples with coordinates adjacent to x, y.
+    """
+    adjacent_unwrapped = (
+        (x-1, y),
+        (x+1, y),
+        (x, y+1),
+        (x, y-1),
+    )
+    adjacent_wrapped = []
+    for u_x, u_y in adjacent_unwrapped:
+        adjacent_wrapped.append(point_wrap(u_x, u_y, width, height))
+    return tuple(adjacent_wrapped)
 
 
 def graceful_ctrlc(func):
@@ -322,6 +430,7 @@ def graceful_ctrlc(func):
         except KeyboardInterrupt:
             pass
     return wrapper
+
 
 def input_thread_body(stdscr, input_queue, quit_event, curses_lock):
     while not quit_event.is_set():
@@ -336,6 +445,10 @@ def input_thread_body(stdscr, input_queue, quit_event, curses_lock):
             # key not bound
             pass
         sleep(0.01)
+
+
+def point_wrap(x, y, width, height):
+    return (x + width) % width, (y + height) % height
 
 
 def setup(stdscr):

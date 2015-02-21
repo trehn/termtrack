@@ -1,4 +1,4 @@
-from math import acos, atan2, cos, degrees, radians, sin
+from math import acos, atan2, cos, degrees, radians, sin, sqrt
 
 
 def cartesian_to_latlon(x, y, z):
@@ -15,6 +15,10 @@ def latlon_to_cartesian(lat, lon):
 
 def latlon_to_spherical(lat, lon):
     return -radians(lat) + radians(90), radians(lon)
+
+
+def point_distance(point1, point2):
+    return sqrt(abs((point2[0] - point1[0]) ** 2 - (point2[1] - point1[1]) ** 2))
 
 
 def point_in_poly(x, y, poly):
