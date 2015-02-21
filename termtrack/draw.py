@@ -267,7 +267,7 @@ def draw_map(stdscr, body, time, night=True, topo=True):
                 stdscr.addstr(y, x, " ", curses.color_pair(1))
             else:
                 if topo is True:
-                    r, g, b, color = body.map[x][y]
+                    r, g, b, color = body.map[x][y][:4]
                 else:
                     r, g, b, color = 0, 249, 114, 48
                 if night_factor > -0.001:
@@ -333,12 +333,13 @@ def draw_footprint(stdscr, body, satellite):
     height, width = stdscr.getmaxyx()
     earth_radius = earth_radius_at_latitude(satellite.latitude)
     horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
-    for horizon_lat, horizon_lon in cartesian_rotation(
+    for hx, hy, hz in cartesian_rotation(
         satellite.latitude,
         satellite.longitude,
         horizon_radius,
         steps=int(width * 1.5),  # somewhat arbitrary
     ):
+        horizon_lat, horizon_lon = cartesian_to_latlon(hx, hy, hz)
         x, y = body.from_latlon(horizon_lat, horizon_lon)
         stdscr.addstr(y, x, "•", curses.color_pair(239))
 
@@ -400,7 +401,7 @@ def cartesian_rotation(lat, lon, r, steps=128):
         py = p2y
         pz = p2z
 
-        yield cartesian_to_latlon(p2x, p2y, p2z_fixed)
+        yield p2x, p2y, p2z_fixed
 
 
 def draw_satellite(stdscr, body, satellite):

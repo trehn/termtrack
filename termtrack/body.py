@@ -6,7 +6,7 @@ from PIL import Image
 import shapefile
 
 from .utils.curses import closest_color
-from .utils.geometry import point_in_poly
+from .utils.geometry import latlon_to_spherical, point_in_poly, spherical_to_cartesian
 
 
 MAP_CACHE = "~/.termtrack_map_cache"
@@ -69,8 +69,8 @@ class Body(object):
                 for y in range(self.height):
                     yield progress
                     color = r = g = b = None
+                    lat, lon = self._to_latlon(x, y)
                     if self.SHAPEFILE is not None:
-                        lat, lon = self.to_latlon(x, y)
                         for shape in self._sf.iterShapes():
                             if (
                                 # for performance reasons we quickly check the
@@ -87,20 +87,31 @@ class Body(object):
                     else:
                         r, g, b = pixels[x, y]
                         color = closest_color(r, g, b)
-                    self.map[x][y] = (r, g, b, color)
+                    spherical = latlon_to_spherical(lat, lon)
+                    cartesian = spherical_to_cartesian(*spherical)
+                    self.map[x][y] = (r, g, b, color, (lat, lon), spherical, cartesian)
                     progress += self.pixel_percentage
                     yield progress
             map_cache[map_cache_key] = self.map
         finally:
             map_cache.close()
 
+    def to_cartesian(self, x, y):
+        return self.map[x][y][6]
+
     def to_latlon(self, x, y):
+        return self.map[x][y][4]
+
+    def _to_latlon(self, x, y):
         xrel = x / (self.width - 1)
         yrel = y / (self.height - 1)
         return (
             self.LAT_CROPPED_MAX - yrel * self.lat_range,
             self.LON_CROPPED_MIN + xrel * self.lon_range,
         )
+
+    def to_spherical(self, x, y):
+        return self.map[x][y][5]
 
 
 class Earth(Body):
