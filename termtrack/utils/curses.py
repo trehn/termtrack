@@ -308,6 +308,36 @@ def closest_color(r, g, b):
     return best_candidate
 
 
+
+
+
+
+def graceful_ctrlc(func):
+    """
+    Makes the decorated function terminate silently on CTRL+C.
+    """
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except KeyboardInterrupt:
+            pass
+    return wrapper
+
+def input_thread_body(stdscr, input_queue, quit_event, curses_lock):
+    while not quit_event.is_set():
+        try:
+            with curses_lock:
+                key = stdscr.getkey()
+        except:
+            key = None
+        try:
+            input_queue.put(KEYMAP[key])
+        except KeyError:
+            # key not bound
+            pass
+        sleep(0.01)
+
+
 def setup(stdscr):
     # curses
     curses.use_default_colors()
@@ -323,30 +353,3 @@ def setup(stdscr):
     input_queue = Queue()
     quit_event = Event()
     return (curses_lock, input_queue, quit_event)
-
-
-def graceful_ctrlc(func):
-    """
-    Makes the decorated function terminate silently on CTRL+C.
-    """
-    def wrapper(*args, **kwargs):
-        try:
-            func(*args, **kwargs)
-        except KeyboardInterrupt:
-            pass
-    return wrapper
-
-
-def input_thread_body(stdscr, input_queue, quit_event, curses_lock):
-    while not quit_event.is_set():
-        try:
-            with curses_lock:
-                key = stdscr.getkey()
-        except:
-            key = None
-        try:
-            input_queue.put(KEYMAP[key])
-        except KeyError:
-            # key not bound
-            pass
-        sleep(0.01)
