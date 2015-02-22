@@ -27,15 +27,17 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 
 	  Hotkeys:
 	      a       Toggle apsides markers
-	      c       Toggle next-orbit coverage overlay (warning: slow)
+	      c       Toggle next-orbit coverage overlay
 	      d       Toggle ascent/descent markers
 	      f       Toggle footprint (satellite horizon)
 	      g       Toggle latitude/longitude grid
 	      i       Toggle info panels
+	      n       Toggle night shading
 	      o       Cycle through drawing 0-3 next orbits
 	      p       Pause/resume
 	      q       Quit
 	      r       Reset plotted time to current
+	      t       Toggle topography
 	      x       Toggle crosshair
 	      left    Small step back in time
 	      right   Small step forward in time
@@ -47,12 +49,13 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  --apsides                 Draw apoapsis and periapsis markers
 	  -b, --body BODY           Which celestial body to draw: Earth, Moon or Mars
 	                            (defaults to Earth)
-	  --coverage                Show next-orbit coverage overlay (warning: slow)
+	  --coverage                Show next-orbit coverage overlay
 	  -f, --footprint           Draw satellite footprint/horizon
 	  --fps N                   Frames per second (defaults to 1)
 	  -g, --grid                Draw latitude/longitude grid
 	  --info                    Show info panels
-	  -N, --no-night            Don't shade night side
+	  -m, --me                  Auto-detect your location as observer
+	  -n, --night               Shade night side
 	  -o, --orbits N            Draw this many orbits ahead of the satellite
 	  --orbit-ascdesc           Draw orbits with ascent/descent markers
 	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
@@ -61,9 +64,8 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	                            minutes, '/N' means 1/Nth of orbital period,
 	                            append a plus sign to interpolate in between
 	                            markers (defaults to /70)
-	  -T, --no-topo             Disable rendering of topographical features
+	  -t, --topo                Enable coloring of topographical features
 	  -x, --crosshair           Draw crosshair around satellite location
-	  -Y, --no-you              Don't auto-detect your location as observer
 	  --version                 Show version and exit
 	  --help                    Show this message and exit
 

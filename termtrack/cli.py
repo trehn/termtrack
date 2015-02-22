@@ -36,8 +36,10 @@ from .utils.curses import (
     INPUT_TOGGLE_FOOTPRINT,
     INPUT_TOGGLE_GRID,
     INPUT_TOGGLE_INFO,
+    INPUT_TOGGLE_NIGHT,
     INPUT_TOGGLE_ORBIT_APSIDES,
     INPUT_TOGGLE_ORBIT_ASCDESC,
+    INPUT_TOGGLE_TOPO,
 )
 
 
@@ -52,14 +54,14 @@ def render(
         fps=1,
         grid=False,
         info=False,
-        no_night=False,
-        no_topo=False,
-        no_you=False,
+        me=False,
+        night=False,
         observer=None,
         orbit_ascdesc=False,
         orbit_res="/70",
         orbits=0,
         satellite=None,
+        topo=False,
         **kwargs
     ):
     curses_lock, input_queue, quit_event = setup(stdscr)
@@ -71,14 +73,14 @@ def render(
     try:
         body = BODY_MAP[body.lower()](1, 1)
         if body.NAME != "Earth":
-            no_night = True
-            no_topo = False
-            no_you = True
+            night = False
+            topo = False
+            me = False
             satellite = None
 
         observer_latitude = None
         observer_longitude = None
-        if not no_you and observer is None:
+        if me and observer is None:
             location_data = get("http://ip-api.com/json").json()
             observer_latitude = location_data['lat']
             observer_longitude = location_data['lon']
@@ -104,7 +106,7 @@ def render(
             if not paused or force_redraw_while_paused:
                 with curses_lock:
                     stdscr.erase()
-                    body = draw_map(stdscr, body, time, night=not no_night, topo=not no_topo)
+                    body = draw_map(stdscr, body, time, night=night, topo=topo)
                     if grid:
                         draw_grid(stdscr, body)
                     if satellite is not None:
@@ -201,10 +203,14 @@ def render(
                 grid = not grid
             elif input_action == INPUT_TOGGLE_INFO:
                 info = not info
+            elif input_action == INPUT_TOGGLE_NIGHT:
+                night = not night
             elif input_action == INPUT_TOGGLE_ORBIT_APSIDES:
                 apsides = not apsides
             elif input_action == INPUT_TOGGLE_ORBIT_ASCDESC:
                 orbit_ascdesc = not orbit_ascdesc
+            elif input_action == INPUT_TOGGLE_TOPO:
+                topo = not topo
     finally:
         quit_event.set()
         input_thread.join()
@@ -235,7 +241,7 @@ def print_version(ctx, param, value):
               help="Which celestial body to draw: Earth, Moon or Mars "
                    "(defaults to Earth)")
 @click.option("--coverage", is_flag=True, default=False,
-              help="Show next-orbit coverage overlay (warning: slow)")
+              help="Show next-orbit coverage overlay")
 @click.option("-f", "--footprint", is_flag=True, default=False,
               help="Draw satellite footprint/horizon")
 @click.option("--fps", default=1, metavar="N",
@@ -244,8 +250,10 @@ def print_version(ctx, param, value):
               help="Draw latitude/longitude grid")
 @click.option("--info", is_flag=True, default=False,
               help="Show info panels")
-@click.option("-N", "--no-night", is_flag=True, default=False,
-              help="Don't shade night side")
+@click.option("-m", "--me", is_flag=True, default=False,
+              help="Auto-detect your location as observer")
+@click.option("-n", "--night", is_flag=True, default=False,
+              help="Shade night side")
 @click.option("-o", "--orbits", default=0, metavar="N",
               help="Draw this many orbits ahead of the satellite")
 @click.option("--orbit-ascdesc", is_flag=True, default=False,
@@ -257,12 +265,10 @@ def print_version(ctx, param, value):
               help="Set distance of orbit markers: 'N' means N minutes, "
                    "'/N' means 1/Nth of orbital period, append a plus "
                    "sign to interpolate in between markers (defaults to /70)")
-@click.option("-T", "--no-topo", is_flag=True, default=False,
-              help="Disable rendering of topographical features")
+@click.option("-t", "--topo", is_flag=True, default=False,
+              help="Enable coloring of topographical features")
 @click.option("-x", "--crosshair", is_flag=True, default=False,
               help="Draw crosshair around satellite location")
-@click.option("-Y", "--no-you", is_flag=True, default=False,
-              help="Don't auto-detect your location as observer")
 @click.option("--version", is_flag=True, callback=print_version,
               expose_value=False, is_eager=True,
               help="Show version and exit")
@@ -281,15 +287,17 @@ def main(**kwargs):
     \b
     Hotkeys:
     \ta\tToggle apsides markers
-    \tc\tToggle next-orbit coverage overlay (warning: slow)
+    \tc\tToggle next-orbit coverage overlay
     \td\tToggle ascent/descent markers
     \tf\tToggle footprint (satellite horizon)
     \tg\tToggle latitude/longitude grid
     \ti\tToggle info panels
+    \tn\tToggle night shading
     \to\tCycle through drawing 0-3 next orbits
     \tp\tPause/resume
     \tq\tQuit
     \tr\tReset plotted time to current
+    \tt\tToggle topography
     \tx\tToggle crosshair
     \tleft\tSmall step back in time
     \tright\tSmall step forward in time
