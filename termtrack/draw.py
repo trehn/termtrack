@@ -38,7 +38,7 @@ def draw_coverage(stdscr, body, satellite, time, steps=100):
             satellite.latitude,
             satellite.longitude,
             horizon_radius,
-            steps=int(body.width / 2),  # somewhat arbitrary
+            steps=int(body.width / 4),  # somewhat arbitrary
         ):
             sat_footprints.append(body.from_latlon(*cartesian_to_latlon(hx, hy, hz)))
 
@@ -357,7 +357,7 @@ def draw_footprint(stdscr, body, satellite):
         satellite.latitude,
         satellite.longitude,
         horizon_radius,
-        steps=int(width * 1.5),  # somewhat arbitrary
+        steps=int(width / 4),  # somewhat arbitrary
     ):
         horizon_lat, horizon_lon = cartesian_to_latlon(hx, hy, hz)
         x, y = body.from_latlon(horizon_lat, horizon_lon)
