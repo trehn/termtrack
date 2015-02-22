@@ -18,9 +18,9 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 
 	  Shows a world map tracking SATELLITE. Valid values for SATELLITE are
 	  numbers from http://www.celestrak.com/NORAD/elements/master.asp (for
-	  your convenience, the aliases listed below are also allowed).
+	  your convenience, a number of aliases have been provided).
 
-	  Satellite aliases:
+	  Example satellite aliases (find more with --aliases):
 	      hubble          Hubble Space Telescope
 	      iss             International Space Station
 	      tiangong        Tiangong-1 (Chinese space station)
@@ -43,6 +43,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	      up      Large step forward in time
 
 	Options:
+	  --aliases                 Show all satellite aliases and exit
 	  --apsides                 Draw apoapsis and periapsis markers
 	  -b, --body BODY           Which celestial body to draw: Earth, Moon or Mars
 	                            (defaults to Earth)

@@ -20,7 +20,7 @@ from .draw import (
     draw_satellite,
     draw_satellite_crosshair,
 )
-from .satellite import EarthSatellite
+from .satellite import ALIASES, EarthSatellite
 from .utils.curses import graceful_ctrlc, input_thread_body, setup
 from .utils.curses import (
     INPUT_CYCLE_ORBITS,
@@ -210,6 +210,14 @@ def render(
         input_thread.join()
 
 
+def print_aliases(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    for alias, satcat_number in ALIASES.items():
+        click.echo("{}: {}".format(alias, satcat_number))
+    ctx.exit()
+
+
 def print_version(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
@@ -218,6 +226,9 @@ def print_version(ctx, param, value):
 
 
 @click.command()
+@click.option("--aliases", is_flag=True, callback=print_aliases,
+              expose_value=False, is_eager=True,
+              help="Show all satellite aliases and exit")
 @click.option("--apsides", is_flag=True, default=False,
               help="Draw apoapsis and periapsis markers")
 @click.option("-b", "--body", default="earth", metavar="BODY",
@@ -261,9 +272,9 @@ def main(**kwargs):
     \b
     Shows a world map tracking SATELLITE. Valid values for SATELLITE are
     numbers from http://www.celestrak.com/NORAD/elements/master.asp (for
-    your convenience, the aliases listed below are also allowed).
+    your convenience, a number of aliases have been provided).
     \b
-    Satellite aliases:
+    Example satellite aliases (find more with --aliases):
     \thubble\t\tHubble Space Telescope
     \tiss\t\tInternational Space Station
     \ttiangong\tTiangong-1 (Chinese space station)
