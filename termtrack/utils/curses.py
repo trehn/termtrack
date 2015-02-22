@@ -298,7 +298,7 @@ RGB_256 = (
 RGB_CACHE = {}
 
 
-def bresenham(points, width, height, connect_ends=True):
+def bresenham(points, width, height, connect_ends=False):
     """
     Takes a sequential(!) list of points within a wrapping canvas of the
     given dimensions and yields a new series of points including the
@@ -344,7 +344,7 @@ def bresenham(points, width, height, connect_ends=True):
         delta_x = abs(p2x - p1x)
         delta_y = abs(p2y - p1y)
 
-        points = []
+        #points = []
         steep = delta_y > delta_x
         if steep:
             p1x, p1y = p1y, p1x
@@ -373,7 +373,7 @@ def bresenham(points, width, height, connect_ends=True):
 
         previous_point = point
 
-    for point in set(connected_points):
+    for point in connected_points:
         yield point_wrap(point[0], point[1], width, height)
 
 
