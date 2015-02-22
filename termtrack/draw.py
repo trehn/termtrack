@@ -42,12 +42,9 @@ def draw_coverage(stdscr, body, satellite, time, steps=100):
         ):
             sat_footprints.append(body.from_latlon(*cartesian_to_latlon(hx, hy, hz)))
 
-        footprints.update(fill_outline(
-            sat_xy,
-            set(bresenham(sat_footprints, body.width, body.height, connect_ends=True)),
-            body.width,
-            body.height,
-        ))
+        sat_outline = set(bresenham(sat_footprints, body.width, body.height, connect_ends=True))
+        fill_outline(sat_xy, sat_outline, body.width, body.height)
+        footprints.update(sat_outline)
 
     # now we have gathered the swept area, but we want to hide areas
     # *not* covered during the orbit

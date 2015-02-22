@@ -392,16 +392,11 @@ def closest_color(r, g, b):
 
 
 def fill_outline(center, outline_points, width, height):
-    filled_points = set([])
+    if center in outline_points:
+        return
     outline_points.add(center)
     for adjacent_point in get_adjacent(center[0], center[1], width, height):
-        if adjacent_point not in outline_points:
-            filled_points.add(adjacent_point)
-            outline_points.add(adjacent_point)
-    recursive_fills = set([])
-    for filled_point in filled_points:
-        recursive_fills.update(fill_outline(filled_point, outline_points, width, height))
-    return outline_points.union(recursive_fills)
+        fill_outline(adjacent_point, outline_points, width, height)
 
 
 def get_adjacent(x, y, width, height):
