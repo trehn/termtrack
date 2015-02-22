@@ -90,7 +90,7 @@ Credit goes to `vain/asciiworld <https://github.com/vain/asciiworld>`_ for inspi
 How Stuff Works
 ===============
 
-To draw the map, TermTrack will look at a shapefile from `Natural Earth <http://www.naturalearthdata.com>`_ in order to find coordinates that are within a landmass. While computationally expensive, this method yields the most accurate and good-looking maps at all terminal sizes. To determine the color of each pixel, a relatively low-resolution and low-quality JPEG image is used. If you look at the image (termtrack/data/earth.jpg), you'll notice it has green oceans. This is to ensure that ocean blue will not spill over into coastal areas during downsampling. Same goes for the expanded white coast of the Antarctic. Finally, the image has been tuned to produce good-looking colors against a black background. The resolution and quality of the image is not really a concern since we do not need maximum per-pixel precision to make the Sahara appear yellow. After computing land/ocean status and land color, this information is cached in ~/.termtrack_map_cache, so it will not have to be rendered again for the current terminal size.
+To draw the map, TermTrack will look at a shapefile from `Natural Earth <http://www.naturalearthdata.com>`_ in order to find coordinates that are within a landmass. While computationally expensive, this method yields the most accurate and good-looking maps at all terminal sizes. To determine the color of each pixel, a relatively low-resolution and low-quality JPEG image is used. If you look at the image (``termtrack/data/earth.jpg``), you'll notice it has green oceans. This is to ensure that ocean blue will not spill over into coastal areas during downsampling. Same goes for the expanded white coast of Antarctica. Finally, the image has been tuned to produce good-looking colors against a black background. The resolution and quality of the image is not really a concern since we do not need maximum per-pixel precision to make the Sahara appear yellow. After computing land/ocean status and land color, this information is cached in ``~/.termtrack_map_cache``, so it will not have to be rendered again for the current terminal size.
 
 For Mars and the Moon there is no shapefile to read and the entire area is colored according to similar JPEG color maps.
 
@@ -106,7 +106,7 @@ When looking at the ISS, you may notice some inconsistencies:
 
 * the apoapsis/periapsis altitudes from the info panel do not match up with live altitude values when the satellite actually is at that point
 * sometimes the current altitude is lower/higher than periapsis/apoapsis altitude
-* the location of apoapsis/periapsis markers from --apsides are not located at the transition points between plus and minus signs drawn by --orbit-ascdesc
+* the location of apoapsis/periapsis markers from ``--apsides`` are not located at the transition points between plus and minus signs drawn by ``--orbit-ascdesc``
 
 Where do these errors come from? The locations of the apsides are derived from the true anomaly which matches values from http://www.satellite-calculations.com/TLETracker/SatTracker.htm so I'm assuming that's not the source of the error. The shape of the Earth also does not explain the deviations in altitude.
 
