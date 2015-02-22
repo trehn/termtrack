@@ -353,14 +353,19 @@ def draw_footprint(stdscr, body, satellite):
     height, width = stdscr.getmaxyx()
     earth_radius = earth_radius_at_latitude(satellite.latitude)
     horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
+    footprint_markers = []
+
     for hx, hy, hz in cartesian_rotation(
         satellite.latitude,
         satellite.longitude,
         horizon_radius,
         steps=int(width / 4),  # somewhat arbitrary
     ):
-        horizon_lat, horizon_lon = cartesian_to_latlon(hx, hy, hz)
-        x, y = body.from_latlon(horizon_lat, horizon_lon)
+        footprint_markers.append(body.from_latlon(*cartesian_to_latlon(hx, hy, hz)))
+
+    footprint_markers = bresenham(footprint_markers, body.width, body.height, connect_ends=True)
+
+    for x, y in footprint_markers:
         stdscr.addstr(y, x, "•", curses.color_pair(239))
 
 
