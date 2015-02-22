@@ -242,9 +242,10 @@ def print_version(ctx, param, value):
 @click.option("-O", "--observer", default=None, metavar="'LAT LON'",
               help="Space-separated latitude and longitude of an "
                    "observer; overrides IP-geolocation")
-@click.option("-r", "--orbit-res", default="/70", metavar="[/]N",
+@click.option("-r", "--orbit-res", default="/70", metavar="[/]N[+]",
               help="Set distance of orbit markers: 'N' means N minutes, "
-                   "'/N' means 1/Nth of orbital period (defaults to /70)")
+                   "'/N' means 1/Nth of orbital period, append a plus "
+                   "sign to interpolate in between markers (defaults to /70)")
 @click.option("-T", "--no-topo", is_flag=True, default=False,
               help="Disable rendering of topographical features")
 @click.option("-x", "--crosshair", is_flag=True, default=False,

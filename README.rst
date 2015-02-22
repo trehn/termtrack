@@ -56,9 +56,10 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  --orbit-ascdesc           Draw orbits with ascent/descent markers
 	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
 	                            observer; overrides IP-geolocation
-	  -r, --orbit-res [/]N      Set distance of orbit markers: 'N' means N
-	                            minutes, '/N' means 1/Nth of orbital period
-	                            (defaults to /70)
+	  -r, --orbit-res [/]N[+]   Set distance of orbit markers: 'N' means N
+	                            minutes, '/N' means 1/Nth of orbital period,
+	                            append a plus sign to interpolate in between
+	                            markers (defaults to /70)
 	  -T, --no-topo             Disable rendering of topographical features
 	  -x, --crosshair           Draw crosshair around satellite location
 	  -Y, --no-you              Don't auto-detect your location as observer

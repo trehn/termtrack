@@ -282,6 +282,10 @@ def draw_map(stdscr, body, time, night=True, topo=True):
 
 def draw_orbits(stdscr, body, satellite, time, orbit_ascdesc=False, orbits=0, orbit_resolution="/70"):
     orbit_offset = timedelta()
+    continuous = False
+    if orbit_resolution.endswith("+"):
+        continuous = True
+        orbit_resolution = orbit_resolution.rstrip("+")
     if orbit_resolution.startswith("/"):
         orbit_increment = satellite.orbital_period / int(orbit_resolution[1:])
     else:
@@ -289,6 +293,8 @@ def draw_orbits(stdscr, body, satellite, time, orbit_ascdesc=False, orbits=0, or
 
     satellite.compute(time)
     previous_altitude = satellite.altitude
+
+    orbit_markers = []
 
     while orbit_offset < satellite.orbital_period * orbits:
         orbit_offset += orbit_increment
@@ -303,11 +309,28 @@ def draw_orbits(stdscr, body, satellite, time, orbit_ascdesc=False, orbits=0, or
         else:
             char = "•"
 
-        try:
-            x, y = body.from_latlon(satellite.latitude, satellite.longitude)
-            stdscr.addstr(y, x, char, curses.color_pair(167))
-        except ValueError:
-            pass
+        orbit_markers.append((body.from_latlon(satellite.latitude, satellite.longitude), char))
+
+    if continuous:
+        orbit_marker_dict = dict(orbit_markers)
+        orbit_markers = bresenham(
+            [point for point, char in orbit_markers],
+            body.width,
+            body.height,
+        )
+        char = "•"
+        for x, y in orbit_markers:
+            try:
+                char = orbit_marker_dict[(x, y)]
+                interpolated = False
+            except KeyError:
+                interpolated = True
+            color = 131 if interpolated else 209
+            stdscr.addstr(y, x, char, curses.color_pair(color))
+    else:
+        for point, char in orbit_markers:
+            stdscr.addstr(point[1], point[0], char, curses.color_pair(209))
+
 
     # reset values to current
     satellite.compute(time)
