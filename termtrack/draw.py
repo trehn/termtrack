@@ -258,7 +258,7 @@ def draw_map(stdscr, body, time, night=True, topo=True):
                 # -0.3141592 = radians(-18)
                 night_factor = max(min(sun.alt, 0), -0.3141592) / -0.3141592
             else:
-                night_factor = 0
+                night_factor = -1
 
             if body.map[x][y][3] is None:
                 stdscr.addstr(y, x, " ", curses.color_pair(1))
