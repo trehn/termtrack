@@ -342,7 +342,6 @@ def bresenham(points, width, height, connect_ends=False):
         delta_x = abs(p2x - p1x)
         delta_y = abs(p2y - p1y)
 
-        #points = []
         steep = delta_y > delta_x
         if steep:
             p1x, p1y = p1y, p1x
