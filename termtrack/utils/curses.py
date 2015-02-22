@@ -390,11 +390,13 @@ def closest_color(r, g, b):
 
 
 def fill_outline(center, outline_points, width, height):
-    if center in outline_points:
-        return
-    outline_points.add(center)
-    for adjacent_point in get_adjacent(center[0], center[1], width, height):
-        fill_outline(adjacent_point, outline_points, width, height)
+    queue = [center]
+    while queue:
+        current_pixel = queue.pop()
+        if current_pixel not in outline_points:
+            outline_points.add(current_pixel)
+            for next_pixel in get_adjacent(current_pixel[0], current_pixel[1], width, height):
+                queue.append(next_pixel)
 
 
 def get_adjacent(x, y, width, height):
