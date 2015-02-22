@@ -316,16 +316,14 @@ def bresenham(points, width, height, connect_ends=False):
         if previous_point is None:
             previous_point = point
             continue
-        # since we have a wrapping canvas, there are five straight paths
-        # between every two points: one inside the canvas and four going
-        # off to each side
+        # since we have a wrapping canvas, there are three straight
+        # paths between every two points: one inside the canvas and two
+        # going off to each side
         # our first task is to find out which one is the shortest
         candidate_points = (
             (point[0], point[1]),  # inside canvas
             (point[0] + width, point[1]),  # through right edge
             (point[0] - width, point[1]),  # through left edge
-            (point[0], point[1] + height),  # through bottom edge
-            (point[0], point[1] - height),  # through top edge
         )
         smallest_distance = float("inf")
         closest_point = None
@@ -411,6 +409,8 @@ def get_adjacent(x, y, width, height):
     )
     adjacent_wrapped = []
     for u_x, u_y in adjacent_unwrapped:
+        if u_y < 0 or u_y >= height:
+            continue
         adjacent_wrapped.append(point_wrap(u_x, u_y, width, height))
     return tuple(adjacent_wrapped)
 
