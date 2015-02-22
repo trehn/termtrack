@@ -1,3 +1,21 @@
+0.4.0
+=====
+
+2015-02-22
+
+* added ``--aliases``
+* added ``--coverage``
+* added ``--footprint``
+* added ``--grid``
+* added ``--info``
+* added ``--orbit-ascdesc``
+* added hotkeys for most drawing options
+* added hotkeys for timetravel
+* added orbit marker interpolation
+* improved overall performance
+* removed map cropping near poles
+
+
 0.3.1
 =====
 

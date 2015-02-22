@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="termtrack",
-    version="0.3.1",
+    version="0.4.0",
     description="Track Earth-orbiting satellites from your terminal",
     author="Torsten Rehn",
     author_email="torsten@rehn.email",
