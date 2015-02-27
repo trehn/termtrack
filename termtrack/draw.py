@@ -23,7 +23,7 @@ class InfoPanel(list):
     pass
 
 
-def draw_coverage(stdscr, body, satellite, time, steps=100):
+def draw_coverage(layer, body, satellite, time, steps=100):
     interval = satellite.orbital_period.total_seconds() / steps
     footprints = set([])
 
@@ -55,13 +55,13 @@ def draw_coverage(stdscr, body, satellite, time, steps=100):
                 inverted_footprints.append((x, y))
 
     for x, y in inverted_footprints:
-        stdscr.addstr(y, x, "•", curses.color_pair(94))
+        layer.draw(x, y, "•", 94)
 
     # reset satellite to current position
     satellite.compute(time)
 
 
-def draw_grid(stdscr, body):
+def draw_grid(layer, body):
     latitudes = []
     longitudes = []
     for lat in GRID_LATITUDES:
@@ -75,22 +75,21 @@ def draw_grid(stdscr, body):
         for y in range(body.height):
             if body.map[x][y][3] is None:
                 if x in longitudes and y in latitudes:
-                    stdscr.addstr(y, x, "+", curses.color_pair(234))
+                    layer.draw(x, y, "+", 234)
                 elif x in longitudes:
-                    stdscr.addstr(y, x, "|", curses.color_pair(234))
+                    layer.draw(x, y, "|", 234)
                 elif y in latitudes:
-                    stdscr.addstr(y, x, "─", curses.color_pair(234))
+                    layer.draw(x, y, "─", 234)
 
 
 def draw_info(
-        stdscr,
+        layer,
+        body,
         time,
         observer_latitude=None,
         observer_longitude=None,
         satellite=None,
     ):
-    height, width = stdscr.getmaxyx()
-    width -= 1
     if satellite is not None:
         text_basic = InfoPanel()
         text_basic.append(satellite.name)
@@ -206,45 +205,20 @@ def draw_info(
         if text.left:
             text.x = 2
         else:
-            text.x = width - len(text.padded_lines[0]) - 1
+            text.x = body.width - len(text.padded_lines[0]) - 1
         if text.top:
             text.y = 1
         else:
-            text.y = height - len(text.padded_lines) - 1
+            text.y = body.height - len(text.padded_lines) - 1
 
-        y = text.y
-        for line in text.padded_lines:
-            try:
-                stdscr.addstr(y, text.x, line)
-            except curses.error:
-                # ignore attempt to draw outside screen
-                pass
-            y += 1
+        for y, line in enumerate(text.padded_lines):
+            for x, char in enumerate(line):
+                layer.draw(text.x + x, text.y + y, char, 0)
 
 
-def draw_map(stdscr, body, time, night=True, topo=True):
-    start = datetime.now()
-    height, width = stdscr.getmaxyx()
-    width -= 1
-
-    if body.height != height or body.width != width:
-        body = body.__class__(width, height)
-        progress_str = "0.0"
-        start = datetime.now()
-        for progress in body.prepare_map():
-            if progress_str != "{:.2f}".format(progress):
-                progress_str = "{:.2f}".format(progress)
-                elapsed_time = datetime.now() - start
-                eta = (elapsed_time / max(progress, 0.01)) * (100 - progress)
-                stdscr.erase()
-                stdscr.addstr(0, 0, "Rendering map (ETA {}, {}%)...".format(
-                    format_seconds(eta.total_seconds()),
-                    progress_str,
-                ))
-                stdscr.refresh()
-
-    for x in range(width):
-        for y in range(height):
+def draw_map(layer, body, time, night=True, topo=True):
+    for x in range(body.width):
+        for y in range(body.height):
             if night:
                 sun = ephem.Sun()
                 obs = ephem.Observer()
@@ -260,9 +234,7 @@ def draw_map(stdscr, body, time, night=True, topo=True):
             else:
                 night_factor = -1
 
-            if body.map[x][y][3] is None:
-                stdscr.addstr(y, x, " ", curses.color_pair(1))
-            else:
+            if body.map[x][y][3] is not None:
                 if topo is True:
                     r, g, b, color = body.map[x][y][:4]
                 else:
@@ -275,12 +247,12 @@ def draw_map(stdscr, body, time, night=True, topo=True):
                     effective_g = ((1 - night_factor) * g) + (night_factor * night_g)
                     effective_b = ((1 - night_factor) * b) + (night_factor * night_b)
                     color = closest_color(effective_r, effective_g, effective_b)
-                stdscr.addstr(y, x, "•", curses.color_pair(color))
-
-    return body
+                layer.draw(x, y, "•", color)
 
 
-def draw_orbits(stdscr, body, satellite, time, orbit_ascdesc=False, orbits=0, orbit_resolution="/70"):
+def draw_orbits(layer, body, satellite, time, orbit_ascdesc=False, orbits=0, orbit_resolution="/70"):
+    if orbits == 0:
+        return
     orbit_offset = timedelta()
     continuous = False
     if orbit_resolution.endswith("+"):
@@ -326,31 +298,29 @@ def draw_orbits(stdscr, body, satellite, time, orbit_ascdesc=False, orbits=0, or
             except KeyError:
                 interpolated = True
             color = 131 if interpolated else 209
-            stdscr.addstr(y, x, char, curses.color_pair(color))
+            layer.draw(x, y, char, color)
     else:
         for point, char in orbit_markers:
-            stdscr.addstr(point[1], point[0], char, curses.color_pair(209))
-
+            layer.draw(point[0], point[1], char, 209)
 
     # reset values to current
     satellite.compute(time)
 
 
-def draw_apsides(stdscr, body, satellite):
+def draw_apsides(layer, body, satellite):
     try:
         x, y = body.from_latlon(satellite.apoapsis_latitude, satellite.apoapsis_longitude)
-        stdscr.addstr(y, x, "A", curses.color_pair(167))
+        layer.draw(x, y, "A", 167)
     except ValueError:
         pass
     try:
         x, y = body.from_latlon(satellite.periapsis_latitude, satellite.periapsis_longitude)
-        stdscr.addstr(y, x, "P", curses.color_pair(167))
+        layer.draw(x, y, "P", 167)
     except ValueError:
         pass
 
 
-def draw_footprint(stdscr, body, satellite):
-    height, width = stdscr.getmaxyx()
+def draw_footprint(layer, body, satellite):
     earth_radius = earth_radius_at_latitude(satellite.latitude)
     horizon_radius = acos(earth_radius / (earth_radius + satellite.altitude))
     footprint_markers = []
@@ -359,14 +329,14 @@ def draw_footprint(stdscr, body, satellite):
         satellite.latitude,
         satellite.longitude,
         horizon_radius,
-        steps=int(width / 4),  # somewhat arbitrary
+        steps=int(body.width / 4),  # somewhat arbitrary
     ):
         footprint_markers.append(body.from_latlon(*cartesian_to_latlon(hx, hy, hz)))
 
     footprint_markers = bresenham(footprint_markers, body.width, body.height, connect_ends=True)
 
     for x, y in footprint_markers:
-        stdscr.addstr(y, x, "•", curses.color_pair(239))
+        layer.draw(x, y, "•", 239)
 
 
 def cartesian_rotation(lat, lon, r, steps=128):
@@ -429,27 +399,28 @@ def cartesian_rotation(lat, lon, r, steps=128):
         yield p2x, p2y, p2z_fixed
 
 
-def draw_satellite(stdscr, body, satellite):
+def draw_satellite(layer, body, satellite):
     try:
         x, y = body.from_latlon(satellite.latitude, satellite.longitude)
-        stdscr.addstr(y, x, "X", curses.color_pair(16))
+        layer.draw(x, y, "X", 16)
     except ValueError:
         pass
 
 
-def draw_satellite_crosshair(stdscr, body, satellite):
+def draw_crosshair(layer, body, satellite):
     try:
         x, y = body.from_latlon(satellite.latitude, satellite.longitude)
     except ValueError:
         return
     for i in range(body.width-1):
         if body.map[i][y][3] is None:
-            stdscr.addstr(y, i, "─", curses.color_pair(235))
+            layer.draw(i, y, "─", 235)
     for i in range(body.height):
         if body.map[x][i][3] is None:
-            stdscr.addstr(i, x, "|", curses.color_pair(235))
+            layer.draw(x, i, "|", 235)
 
 
-def draw_location(stdscr, body, lat, lon):
-    x, y = body.from_latlon(lat, lon)
-    stdscr.addstr(y, x, "•", curses.color_pair(2))
+def draw_location(layer, body, lat, lon):
+    if lat and lon:
+        x, y = body.from_latlon(lat, lon)
+        layer.draw(x, y, "•", 2)

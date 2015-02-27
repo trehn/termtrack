@@ -11,6 +11,7 @@ from .body import BODY_MAP
 from .draw import (
     draw_apsides,
     draw_coverage,
+    draw_crosshair,
     draw_footprint,
     draw_grid,
     draw_info,
@@ -18,8 +19,8 @@ from .draw import (
     draw_map,
     draw_orbits,
     draw_satellite,
-    draw_satellite_crosshair,
 )
+from .layer import Layer, pixel_from_layers
 from .satellite import ALIASES, EarthSatellite
 from .utils.curses import graceful_ctrlc, input_thread_body, setup
 from .utils.curses import (
@@ -41,6 +42,40 @@ from .utils.curses import (
     INPUT_TOGGLE_ORBIT_ASCDESC,
     INPUT_TOGGLE_TOPO,
 )
+from .utils.text import format_seconds
+
+
+def check_for_resize(stdscr, body):
+    start = datetime.now()
+    height, width = stdscr.getmaxyx()
+    width -= 1
+
+    if body.height != height or body.width != width:
+        body = body.__class__(width, height)
+        progress_str = "0.0"
+        start = datetime.now()
+        for progress in body.prepare_map():
+            if progress_str != "{:.2f}".format(progress):
+                progress_str = "{:.2f}".format(progress)
+                elapsed_time = datetime.now() - start
+                eta = (elapsed_time / max(progress, 0.01)) * (100 - progress)
+                stdscr.erase()
+                stdscr.addstr(0, 0, "Rendering map (ETA {}, {}%)...".format(
+                    format_seconds(eta.total_seconds()),
+                    progress_str,
+                ))
+                stdscr.refresh()
+        return body, True
+    else:
+        return body, False
+
+
+def redraw(stdscr, body, layers):
+    stdscr.erase()
+    for x in range(body.width):
+        for y in range(body.height):
+            char, color = pixel_from_layers(x, y, layers)
+            stdscr.addstr(y, x, char, curses.color_pair(color))
 
 
 @graceful_ctrlc
@@ -99,52 +134,78 @@ def render(
         else:
             satellite_obj = EarthSatellite(satellite, time, observer_latitude=observer_latitude, observer_longitude=observer_longitude)
 
+        apsides_layer = Layer(draw_apsides, update_timeout=8)
+        apsides_layer.hidden = not apsides
+        coverage_layer = Layer(draw_coverage, update_timeout=10)
+        coverage_layer.hidden = not coverage
+        crosshair_layer = Layer(draw_crosshair)
+        crosshair_layer.hidden = not crosshair
+        footprint_layer = Layer(draw_footprint)
+        footprint_layer.hidden = not footprint
+        grid_layer = Layer(draw_grid, update_timeout=None)
+        grid_layer.hidden = not grid
+        info_layer = Layer(draw_info)
+        info_layer.hidden = not info
+        map_layer = Layer(draw_map, update_timeout=None)
+        observer_layer = Layer(draw_location, update_timeout=None)
+        orbit_layer = Layer(draw_orbits)
+        satellite_layer = Layer(draw_satellite)
+        satellite_layer.hidden = satellite_obj is None
+
+        layers = [
+            info_layer,
+            satellite_layer,
+            apsides_layer,
+            observer_layer,
+            footprint_layer,
+            orbit_layer,
+            coverage_layer,
+            map_layer,
+            crosshair_layer,
+            grid_layer,
+        ]
+
         while True:
+            with curses_lock:
+                body, did_resize = check_for_resize(stdscr, body)
+            if did_resize:
+                for layer in layers:
+                    layer.last_updated = None
+
             draw_start = datetime.now()
             if not paused:
                 time = datetime.utcnow() + time_offset
             if not paused or force_redraw_while_paused:
+                grid_layer.update(body)
+                info_layer.update(
+                    body,
+                    time,
+                    observer_latitude=observer_latitude,
+                    observer_longitude=observer_longitude,
+                    satellite=satellite_obj,
+                )
+                map_layer.update(body, time, night=night, topo=topo)
+                observer_layer.update(body, observer_latitude, observer_longitude)
+
+                if satellite is not None:
+                    apsides_layer.update(body, satellite_obj)
+                    coverage_layer.update(body, satellite_obj, time)
+                    crosshair_layer.update(body, satellite_obj)
+                    footprint_layer.update(body, satellite_obj)
+                    orbit_layer.update(
+                        body,
+                        satellite_obj,
+                        time,
+                        orbits=orbits,
+                        orbit_ascdesc=orbit_ascdesc,
+                        orbit_resolution=orbit_res,
+                    )
+                    satellite_layer.update(body, satellite_obj)
+                    satellite_obj.compute(time)
+
                 with curses_lock:
-                    stdscr.erase()
-                    body = draw_map(stdscr, body, time, night=night, topo=topo)
-                    if grid:
-                        draw_grid(stdscr, body)
-                    if satellite is not None:
-                        satellite_obj.compute(time)
-                        if crosshair:
-                            draw_satellite_crosshair(stdscr, body, satellite_obj)
-                        if coverage:
-                            draw_coverage(
-                                stdscr,
-                                body,
-                                satellite_obj,
-                                time,
-                            )
-                        if footprint:
-                            draw_footprint(stdscr, body, satellite_obj)
-                        if orbits > 0:
-                            draw_orbits(
-                                stdscr,
-                                body,
-                                satellite_obj,
-                                time,
-                                orbits=orbits,
-                                orbit_ascdesc=orbit_ascdesc,
-                                orbit_resolution=orbit_res,
-                            )
-                        if apsides:
-                            draw_apsides(stdscr, body, satellite_obj)
-                        draw_satellite(stdscr, body, satellite_obj)
-                    if observer_latitude is not None and observer_longitude is not None:
-                        draw_location(stdscr, body, observer_latitude, observer_longitude)
-                    if info:
-                        draw_info(
-                            stdscr,
-                            time,
-                            observer_latitude=observer_latitude,
-                            observer_longitude=observer_longitude,
-                            satellite=satellite_obj,
-                        )
+                    redraw(stdscr, body, layers)
+
             draw_time = (datetime.now() - draw_start).total_seconds()
 
             # get input
@@ -194,23 +255,32 @@ def render(
                 if paused:
                     paused = time = datetime.utcnow()
             elif input_action == INPUT_TOGGLE_COVERAGE:
-                coverage = not coverage
+                coverage_layer.hidden = not coverage_layer.hidden
+                coverage_layer.last_updated = None
             elif input_action == INPUT_TOGGLE_CROSSHAIR:
-                crosshair = not crosshair
+                crosshair_layer.hidden = not crosshair_layer.hidden
             elif input_action == INPUT_TOGGLE_FOOTPRINT:
-                footprint = not footprint
+                footprint_layer.hidden = not footprint_layer.hidden
             elif input_action == INPUT_TOGGLE_GRID:
-                grid = not grid
+                grid_layer.hidden = not grid_layer.hidden
             elif input_action == INPUT_TOGGLE_INFO:
-                info = not info
+                info_layer.hidden = not info_layer.hidden
             elif input_action == INPUT_TOGGLE_NIGHT:
                 night = not night
+                map_layer.last_updated = None
+                if night:
+                    map_layer.update_timeout = timedelta(seconds=60)
+                else:
+                    map_layer.update_timeout = None
             elif input_action == INPUT_TOGGLE_ORBIT_APSIDES:
-                apsides = not apsides
+                apsides_layer.hidden = not apsides_layer.hidden
+                apsides_layer.last_updated = None
             elif input_action == INPUT_TOGGLE_ORBIT_ASCDESC:
                 orbit_ascdesc = not orbit_ascdesc
+                orbit_layer.last_updated = None
             elif input_action == INPUT_TOGGLE_TOPO:
                 topo = not topo
+                map_layer.last_updated = None
     finally:
         quit_event.set()
         input_thread.join()
