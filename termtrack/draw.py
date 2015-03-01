@@ -137,7 +137,9 @@ def draw_info(
         text_params.append("  {:.4f}°".format(degrees(satellite.inclination)))
         text_params.append("")
         text_params.append("RA of asc node:")
-        text_params.append("  {:.4f}°".format(degrees(satellite.right_ascension_of_ascending_node)))
+        text_params.append("  {:.4f}°".format(
+            degrees(satellite.right_ascension_of_ascending_node)
+        ))
         text_params.append("")
         text_params.append("Arg of periapsis:")
         text_params.append("  {:.4f}°".format(degrees(satellite.argument_of_periapsis)))
@@ -250,7 +252,15 @@ def draw_map(layer, body, time, night=True, topo=True):
                 layer.draw(x, y, "•", color)
 
 
-def draw_orbits(layer, body, satellite, time, orbit_ascdesc=False, orbits=0, orbit_resolution="/70"):
+def draw_orbits(
+    layer,
+    body,
+    satellite,
+    time,
+    orbit_ascdesc=False,
+    orbits=0,
+    orbit_resolution="/70",
+):
     if orbits == 0:
         return
     orbit_offset = timedelta()

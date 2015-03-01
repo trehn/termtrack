@@ -68,7 +68,14 @@ def orbital_velocity(semi_major_axis, altitude, latitude):
 
 
 class EarthSatellite(object):
-    def __init__(self, number, time, observer_latitude=0, observer_longitude=0, observer_elevation=0):
+    def __init__(
+        self,
+        number,
+        time,
+        observer_latitude=0,
+        observer_longitude=0,
+        observer_elevation=0,
+    ):
         number = ALIASES.get(number, number)
         raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
         tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
@@ -93,8 +100,10 @@ class EarthSatellite(object):
         ))
         self.right_ascension_of_ascending_node = float(self._satellite._raan.norm)
         self.semi_major_axis = semi_major_axis(self.mean_motion)
-        self.apoapsis_altitude = self.semi_major_axis * (1 + self.eccentricity) - earth_radius_at_latitude(self.apoapsis_latitude)
-        self.periapsis_altitude = self.semi_major_axis * (1 - self.eccentricity) - earth_radius_at_latitude(self.periapsis_latitude)
+        self.apoapsis_altitude = self.semi_major_axis * (1 + self.eccentricity) - \
+                                 earth_radius_at_latitude(self.apoapsis_latitude)
+        self.periapsis_altitude = self.semi_major_axis * (1 - self.eccentricity) - \
+                                  earth_radius_at_latitude(self.periapsis_latitude)
         self.compute(time)
 
     def compute(self, time, plus_seconds=0):
@@ -116,9 +125,12 @@ class EarthSatellite(object):
             sqrt(1 - self.eccentricity) * cos(self.eccentric_anomaly / 2)
         )
         self.time_since_periapsis = timedelta(seconds=self.mean_anomaly / self.mean_motion)
-        self.time_to_periapsis = timedelta(seconds=self.orbital_period.total_seconds() - self.time_since_periapsis.total_seconds())
-        self.time_since_apoapsis = timedelta(seconds=(self.mean_anomaly + pi) % (2 * pi) / self.mean_motion)
-        self.time_to_apoapsis = timedelta(seconds=self.orbital_period.total_seconds() - self.time_since_apoapsis.total_seconds())
+        self.time_to_periapsis = timedelta(seconds=self.orbital_period.total_seconds() -
+                                                   self.time_since_periapsis.total_seconds())
+        self.time_since_apoapsis = timedelta(seconds=(self.mean_anomaly + pi) % (2 * pi) /
+                                                     self.mean_motion)
+        self.time_to_apoapsis = timedelta(seconds=self.orbital_period.total_seconds() -
+                                                  self.time_since_apoapsis.total_seconds())
         self.velocity = orbital_velocity(self.semi_major_axis, self.altitude, self.latitude)
 
         self._satellite.compute(target_time + self.time_to_periapsis)
@@ -129,7 +141,11 @@ class EarthSatellite(object):
         self.apoapsis_latitude = degrees(self._satellite.sublat)
         self.apoapsis_longitude = degrees(self._satellite.sublong)
 
-        if self.observer_latitude is not None and self.observer_longitude is not None and plus_seconds == 0:
+        if (
+            self.observer_latitude is not None and
+            self.observer_longitude is not None and
+            plus_seconds == 0
+        ):
             observer = ephem.Observer()
             observer.elevation = self.observer_elevation
             observer.lat = str(self.observer_latitude)

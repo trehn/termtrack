@@ -132,7 +132,12 @@ def render(
         if satellite is None:
             satellite_obj = None
         else:
-            satellite_obj = EarthSatellite(satellite, time, observer_latitude=observer_latitude, observer_longitude=observer_longitude)
+            satellite_obj = EarthSatellite(
+                satellite,
+                time,
+                observer_latitude=observer_latitude,
+                observer_longitude=observer_longitude,
+            )
 
         apsides_layer = Layer(draw_apsides, update_timeout=8)
         apsides_layer.hidden = not apsides
