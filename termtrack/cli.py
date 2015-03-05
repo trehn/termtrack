@@ -127,7 +127,7 @@ def render(
         paused = False
         time_offset = timedelta(0)
         time = datetime.utcnow() + time_offset
-        force_redraw_while_paused = False
+        force_redraw = False
 
         if satellite is None:
             satellite_obj = None
@@ -180,7 +180,10 @@ def render(
             draw_start = datetime.now()
             if not paused:
                 time = datetime.utcnow() + time_offset
-            if not paused or force_redraw_while_paused:
+            if force_redraw:
+                for layer in layers:
+                    layer.last_updated = None
+            if not paused or force_redraw:
                 grid_layer.update(body)
                 info_layer.update(
                     body,
@@ -218,10 +221,10 @@ def render(
                 input_action = input_queue.get(True, max(0, 1/fps - draw_time))
                 # we just received an input that probably modified how
                 # our screen is supposed to look, ergo we need to redraw
-                force_redraw_while_paused = True
+                force_redraw = True
             except Empty:
                 input_action = None
-                force_redraw_while_paused = False
+                force_redraw = False
 
             # react to input
             if input_action == INPUT_CYCLE_ORBITS:
