@@ -297,8 +297,8 @@ def render(
 def print_aliases(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
-    for alias, satcat_number in ALIASES.items():
-        click.echo("{}: {}".format(alias, satcat_number))
+    for alias in sorted(ALIASES.keys()):
+        click.echo("{}: {}".format(alias, ALIASES[alias]))
     ctx.exit()
 
 
