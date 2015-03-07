@@ -1,6 +1,5 @@
-import curses
-from datetime import datetime, timedelta
-from math import acos, copysign, cos, degrees, pi, radians, sin, sqrt
+from datetime import timedelta
+from math import acos, cos, degrees, radians, sin
 
 import ephem
 
