@@ -60,6 +60,7 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  --orbit-ascdesc           Draw orbits with ascent/descent markers
 	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
 	                            observer; overrides IP-geolocation
+	  -p, --paused              Start paused
 	  -r, --orbit-res [/]N[+]   Set distance of orbit markers: 'N' means N
 	                            minutes, '/N' means 1/Nth of orbital period,
 	                            append a plus sign to interpolate in between

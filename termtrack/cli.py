@@ -95,6 +95,7 @@ def render(
         orbit_ascdesc=False,
         orbit_res="/70",
         orbits=0,
+        paused=False,
         satellite=None,
         topo=False,
         **kwargs
@@ -124,10 +125,13 @@ def render(
             observer_latitude = float(obs_latlon[0])
             observer_longitude = float(obs_latlon[1])
 
-        paused = False
         time_offset = timedelta(0)
         time = datetime.utcnow() + time_offset
         force_redraw = False
+
+        if paused is True:
+            paused = datetime.utcnow()
+            force_redraw = True
 
         if satellite is None:
             satellite_obj = None
@@ -339,6 +343,8 @@ def print_version(ctx, param, value):
 @click.option("-O", "--observer", default=None, metavar="'LAT LON'",
               help="Space-separated latitude and longitude of an "
                    "observer; overrides IP-geolocation")
+@click.option("-p", "--paused", is_flag=True, default=False,
+              help="Start paused")
 @click.option("-r", "--orbit-res", default="/70", metavar="[/]N[+]",
               help="Set distance of orbit markers: 'N' means N minutes, "
                    "'/N' means 1/Nth of orbital period, append a plus "
