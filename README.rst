@@ -49,11 +49,11 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	  --apsides                 Draw apoapsis and periapsis markers
 	  -b, --body BODY           Which celestial body to draw: Earth, Moon or Mars
 	                            (defaults to Earth)
-	  --coverage                Show next-orbit coverage overlay
+	  -c, --coverage            Show next-orbit coverage overlay
 	  -f, --footprint           Draw satellite footprint/horizon
 	  --fps N                   Frames per second (defaults to 1)
 	  -g, --grid                Draw latitude/longitude grid
-	  --info                    Show info panels
+	  -i, --info                Show info panels
 	  -m, --me                  Auto-detect your location as observer
 	  -n, --night               Shade night side
 	  -o, --orbits N            Draw this many orbits ahead of the satellite

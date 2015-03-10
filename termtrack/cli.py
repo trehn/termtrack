@@ -322,7 +322,7 @@ def print_version(ctx, param, value):
 @click.option("-b", "--body", default="earth", metavar="BODY",
               help="Which celestial body to draw: Earth, Moon or Mars "
                    "(defaults to Earth)")
-@click.option("--coverage", is_flag=True, default=False,
+@click.option("-c", "--coverage", is_flag=True, default=False,
               help="Show next-orbit coverage overlay")
 @click.option("-f", "--footprint", is_flag=True, default=False,
               help="Draw satellite footprint/horizon")
@@ -330,7 +330,7 @@ def print_version(ctx, param, value):
               help="Frames per second (defaults to 1)")
 @click.option("-g", "--grid", is_flag=True, default=False,
               help="Draw latitude/longitude grid")
-@click.option("--info", is_flag=True, default=False,
+@click.option("-i", "--info", is_flag=True, default=False,
               help="Show info panels")
 @click.option("-m", "--me", is_flag=True, default=False,
               help="Auto-detect your location as observer")
