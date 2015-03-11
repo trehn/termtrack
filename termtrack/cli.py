@@ -99,7 +99,7 @@ def render(
         satellite=None,
         topo=False,
         **kwargs
-    ):
+):
     curses_lock, input_queue, quit_event = setup(stdscr)
     input_thread = Thread(
         args=(stdscr, input_queue, quit_event, curses_lock),

@@ -82,13 +82,13 @@ def draw_grid(layer, body):
 
 
 def draw_info(
-        layer,
-        body,
-        time,
-        observer_latitude=None,
-        observer_longitude=None,
-        satellite=None,
-    ):
+    layer,
+    body,
+    time,
+    observer_latitude=None,
+    observer_longitude=None,
+    satellite=None,
+):
     if satellite is not None:
         text_basic = InfoPanel()
         text_basic.append(satellite.name)

@@ -19,11 +19,11 @@ ALIASES = {
     'tiangong-1': 37820,
     'tiangong1': 37820,
 }
-TLE_REGEX = re.compile("PRE>(.*)</PRE", flags=re.DOTALL)
 EARTH_FLATTENING_COEFFICIENT = 0.003352891869237217
 EARTH_RADIUS = 6378135
 EARTH_SGP = 3.986004418e+14  # Standard gravitational parameter
 KEPLER_ACCURACY = 1e-6
+TLE_REGEX = re.compile("PRE>(.*)</PRE", flags=re.DOTALL)
 
 
 def earth_radius_at_latitude(latitude):
