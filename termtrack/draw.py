@@ -277,8 +277,7 @@ def draw_orbits(
 
     orbit_markers = []
 
-    while orbit_offset < satellite.orbital_period * orbits:
-        orbit_offset += orbit_increment
+    while orbit_offset < satellite.orbital_period * orbits + orbit_increment:
         satellite.compute(time, plus_seconds=orbit_offset.total_seconds())
 
         if orbit_ascdesc:
@@ -291,6 +290,7 @@ def draw_orbits(
             char = "•"
 
         orbit_markers.append((body.from_latlon(satellite.latitude, satellite.longitude), char))
+        orbit_offset += orbit_increment
 
     if continuous:
         orbit_marker_dict = dict(orbit_markers)
