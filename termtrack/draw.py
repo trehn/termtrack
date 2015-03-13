@@ -152,10 +152,10 @@ def draw_info(
         text_params.append("Mean anomaly @epoch:")
         text_params.append("  {:.4f}°".format(degrees(satellite.mean_anomaly_at_epoch)))
         text_params.append("")
-        text_params.append("Epoch:")
+        text_params.append("Epoch (UTC):")
         text_params.append(satellite.epoch.strftime("  %Y-%m-%d %H:%M:%S"))
         text_params.append("")
-        text_params.append("Time (UTC):")
+        text_params.append("Current time (UTC):")
         text_params.append(time.strftime("  %Y-%m-%d %H:%M:%S"))
         text_params.top = False
         text_params.left = True
