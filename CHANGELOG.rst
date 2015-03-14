@@ -1,3 +1,17 @@
+0.5.0
+=====
+
+2015-03-14
+
+* now starts with no drawing options enabled by default
+* added ``--night``
+* added ``--paused``
+* added ``--topo``
+* orbit interpolation now starts at satellite position
+* further improvements to performance and responsiveness
+* fixed terminator not updating during timetravel
+
+
 0.4.0
 =====
 
