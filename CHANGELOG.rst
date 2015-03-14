@@ -1,3 +1,11 @@
+0.5.1
+=====
+
+2015-03-14
+
+* fixed python-tag on wheel package
+
+
 0.5.0
 =====
 
