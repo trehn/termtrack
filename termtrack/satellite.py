@@ -75,10 +75,17 @@ class EarthSatellite(object):
         observer_latitude=0,
         observer_longitude=0,
         observer_elevation=0,
+        tle_file=None,
     ):
-        number = ALIASES.get(number, number)
-        raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
-        tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
+        if tle_file is not None:
+            with open(tle_file) as f:
+                tle = f.read().strip().split("\n")
+        elif number is not None:
+            number = ALIASES.get(number, number)
+            raw_html = get("http://www.celestrak.com/cgi-bin/TLE.pl?CATNR={}".format(number)).text
+            tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
+        else:
+            raise ValueError("No SATCAT number or TLE file provided")
         self._satellite = ephem.readtle(*tle)
         self.argument_of_periapsis = float(self._satellite._ap.norm)
         self.eccentricity = self._satellite._e

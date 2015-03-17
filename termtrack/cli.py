@@ -97,6 +97,7 @@ def render(
         orbits=0,
         paused=False,
         satellite=None,
+        tle=None,
         topo=False,
         **kwargs
 ):
@@ -133,7 +134,7 @@ def render(
             paused = datetime.utcnow()
             force_redraw = True
 
-        if satellite is None:
+        if satellite is None and tle is None:
             satellite_obj = None
         else:
             satellite_obj = EarthSatellite(
@@ -141,6 +142,7 @@ def render(
                 time,
                 observer_latitude=observer_latitude,
                 observer_longitude=observer_longitude,
+                tle_file=tle,
             )
 
         apsides_layer = Layer(draw_apsides, update_timeout=8)
@@ -199,7 +201,7 @@ def render(
                 map_layer.update(body, time, night=night, topo=topo)
                 observer_layer.update(body, observer_latitude, observer_longitude)
 
-                if satellite is not None:
+                if satellite_obj is not None:
                     apsides_layer.update(body, satellite_obj)
                     coverage_layer.update(body, satellite_obj, time)
                     crosshair_layer.update(body, satellite_obj)
@@ -237,12 +239,12 @@ def render(
             elif input_action == INPUT_EXIT:
                 break
             elif input_action == INPUT_TIME_MINUS_SHORT:
-                if satellite is None:
+                if satellite_obj is None:
                     time_offset -= timedelta(minutes=30)
                 else:
                     time_offset -= satellite_obj.orbital_period / 20
             elif input_action == INPUT_TIME_MINUS_LONG:
-                if satellite is None:
+                if satellite_obj is None:
                     time_offset -= timedelta(hours=6)
                 else:
                     time_offset -= satellite_obj.orbital_period / 2
@@ -253,12 +255,12 @@ def render(
                 else:
                     paused = datetime.utcnow()
             elif input_action == INPUT_TIME_PLUS_SHORT:
-                if satellite is None:
+                if satellite_obj is None:
                     time_offset += timedelta(minutes=30)
                 else:
                     time_offset += satellite_obj.orbital_period / 20
             elif input_action == INPUT_TIME_PLUS_LONG:
-                if satellite is None:
+                if satellite_obj is None:
                     time_offset += timedelta(hours=6)
                 else:
                     time_offset += satellite_obj.orbital_period / 2
@@ -351,6 +353,9 @@ def print_version(ctx, param, value):
                    "sign to interpolate in between markers (defaults to /70)")
 @click.option("-t", "--topo", is_flag=True, default=False,
               help="Enable coloring of topographical features")
+@click.option("--tle", default=None, metavar="FILE",
+              help="read TLE data from FILE instead of downloading it "
+                   "(SATELLITE will have no effect and can be omitted)")
 @click.option("-x", "--crosshair", is_flag=True, default=False,
               help="Draw crosshair around satellite location")
 @click.option("--version", is_flag=True, callback=print_version,

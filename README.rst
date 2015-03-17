@@ -66,6 +66,8 @@ Requires a terminal with 256 colors. A black background is highly recommended.
 	                            append a plus sign to interpolate in between
 	                            markers (defaults to /70)
 	  -t, --topo                Enable coloring of topographical features
+	  --tle FILE                read TLE data from FILE instead of downloading it
+	                            (SATELLITE will have no effect and can be omitted)
 	  -x, --crosshair           Draw crosshair around satellite location
 	  --version                 Show version and exit
 	  --help                    Show this message and exit
