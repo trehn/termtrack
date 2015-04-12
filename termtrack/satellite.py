@@ -150,14 +150,13 @@ class EarthSatellite(object):
 
         if (
             self.observer_latitude is not None and
-            self.observer_longitude is not None and
-            plus_seconds == 0
+            self.observer_longitude is not None
         ):
             observer = ephem.Observer()
+            observer.date = target_time
             observer.elevation = self.observer_elevation
             observer.lat = str(self.observer_latitude)
             observer.lon = str(self.observer_longitude)
-            self._satellite.compute()
             self._satellite.compute(observer)
             self.observer_azimuth = float(self._satellite.az.norm)
             self.observer_altitude = float(self._satellite.alt.znorm)
