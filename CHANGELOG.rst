@@ -1,3 +1,13 @@
+0.6.0
+=====
+
+2015-08-09
+
+* added ``--tle``
+* added AOS/LOS info
+* fixed observer azimuth and altitude not updating during timetravel
+
+
 0.5.1
 =====
 
