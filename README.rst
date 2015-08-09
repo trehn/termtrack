@@ -6,11 +6,11 @@ Track orbiting objects (such as the International Space Station) in your termina
 .. image:: https://raw.githubusercontent.com/trehn/termtrack/master/screenshot.png
     :alt: Screenshot
 
-Requires a terminal with 256 colors. A black background is highly recommended.
+Requires Python 3.3+ and a terminal with 256 colors. A black background is highly recommended.
 
 .. code-block::
 
-	pip install termtrack
+	pip3 install termtrack
 
 .. code-block::
 
