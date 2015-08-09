@@ -160,3 +160,5 @@ class EarthSatellite(object):
             self._satellite.compute(observer)
             self.observer_azimuth = float(self._satellite.az.norm)
             self.observer_altitude = float(self._satellite.alt.znorm)
+            self.acquisition_of_signal = self._satellite.rise_time
+            self.loss_of_signal = self._satellite.set_time

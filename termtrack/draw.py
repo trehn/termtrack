@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from math import acos, cos, degrees, radians, sin
 
 import ephem
@@ -187,6 +187,22 @@ def draw_info(
             text_observer.append("")
             text_observer.append("Altitude:")
             text_observer.append("  {:.2f}°".format(degrees(satellite.observer_altitude)))
+            if satellite.acquisition_of_signal is not None and \
+                    satellite.loss_of_signal is not None:
+                text_observer.append("")
+                text_observer.append("AOS:")
+                text_observer.append("  {}".format(
+                    format_seconds((
+                        satellite.acquisition_of_signal.datetime() - time
+                    ).total_seconds())
+                ))
+                text_observer.append("")
+                text_observer.append("LOS:")
+                text_observer.append("  {}".format(
+                    format_seconds((
+                        satellite.loss_of_signal.datetime() - time
+                    ).total_seconds())
+                ))
         text_observer.top = True
         text_observer.left = False
         panels.append(text_observer)
