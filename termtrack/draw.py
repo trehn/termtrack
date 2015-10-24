@@ -222,7 +222,7 @@ def draw_info(
         if text.left:
             text.x = 2
         else:
-            text.x = body.width - len(text.padded_lines[0]) - 1
+            text.x = body.width - len(text.padded_lines[0]) - 2
         if text.top:
             text.y = 1
         else:

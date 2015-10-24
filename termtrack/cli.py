@@ -48,7 +48,6 @@ from .utils.text import format_seconds
 def check_for_resize(stdscr, body):
     start = datetime.now()
     height, width = stdscr.getmaxyx()
-    width -= 1
 
     if body.height != height or body.width != width:
         body = body.__class__(width, height)
@@ -60,7 +59,7 @@ def check_for_resize(stdscr, body):
                 elapsed_time = datetime.now() - start
                 eta = (elapsed_time / max(progress, 0.01)) * (100 - progress)
                 stdscr.erase()
-                stdscr.addstr(0, 0, "Rendering map (ETA {}, {}%)...".format(
+                stdscr.insstr(0, 0, "Rendering map (ETA {}, {}%)...".format(
                     format_seconds(eta.total_seconds()),
                     progress_str,
                 ))
@@ -75,7 +74,7 @@ def redraw(stdscr, body, layers):
     for x in range(body.width):
         for y in range(body.height):
             char, color = pixel_from_layers(x, y, layers)
-            stdscr.addstr(y, x, char, curses.color_pair(color))
+            stdscr.insstr(y, x, char, curses.color_pair(color))
 
 
 @graceful_ctrlc
