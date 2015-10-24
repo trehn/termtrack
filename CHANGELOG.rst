@@ -1,3 +1,11 @@
+0.6.1
+=====
+
+2015-10-24
+
+* fixed drawing area being one column smaller than it could be
+
+
 0.6.0
 =====
 
