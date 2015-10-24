@@ -38,7 +38,6 @@ setup(
         "pyshp >= 1.2.1",
         "requests >= 2.0.0",
     ],
-    py_modules=['termtrack'],
     entry_points={
         'console_scripts': [
             "termtrack=termtrack.cli:main",
