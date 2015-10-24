@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from math import acos, cos, degrees, radians, sin
 
 import ephem
