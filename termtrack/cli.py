@@ -18,6 +18,7 @@ from .draw import (
     draw_location,
     draw_map,
     draw_orbits,
+    draw_planets,
     draw_satellite,
 )
 from .layer import Layer, pixel_from_layers
@@ -95,6 +96,7 @@ def render(
         orbit_res="/70",
         orbits=0,
         paused=False,
+        planets="",
         satellite=None,
         tle=None,
         topo=False,
@@ -159,6 +161,7 @@ def render(
         map_layer = Layer(draw_map, update_timeout=None)
         observer_layer = Layer(draw_location, update_timeout=None)
         orbit_layer = Layer(draw_orbits)
+        planet_layer = Layer(draw_planets)
         satellite_layer = Layer(draw_satellite)
         satellite_layer.hidden = satellite_obj is None
 
@@ -169,6 +172,7 @@ def render(
             observer_layer,
             footprint_layer,
             orbit_layer,
+            planet_layer,
             coverage_layer,
             map_layer,
             crosshair_layer,
@@ -199,6 +203,7 @@ def render(
                 )
                 map_layer.update(body, time, night=night, topo=topo)
                 observer_layer.update(body, observer_latitude, observer_longitude)
+                planet_layer.update(body, time, planets)
 
                 if satellite_obj is not None:
                     apsides_layer.update(body, satellite_obj)
@@ -346,6 +351,9 @@ def print_version(ctx, param, value):
                    "observer; overrides IP-geolocation")
 @click.option("-p", "--paused", is_flag=True, default=False,
               help="Start paused")
+@click.option("-P", "--planets", default="", metavar="PLANETS",
+              help="Comma-separated list of celestial objects to draw "
+                   "(e.g. 'sun,moon')")
 @click.option("-r", "--orbit-res", default="/70", metavar="[/]N[+]",
               help="Set distance of orbit markers: 'N' means N minutes, "
                    "'/N' means 1/Nth of orbital period, append a plus "

@@ -3,6 +3,7 @@ from math import acos, cos, degrees, radians, sin
 
 import ephem
 
+from .planets import PLANET_SYMBOLS, latlon_for_planet
 from .satellite import earth_radius_at_latitude
 from .utils.curses import bresenham, closest_color, fill_outline
 from .utils.geometry import (
@@ -330,6 +331,17 @@ def draw_orbits(
 
     # reset values to current
     satellite.compute(time)
+
+
+def draw_planets(layer, body, time, planets):
+    for planet in planets.split(","):
+        planet = planet.strip().lower()
+        if not planet:
+            continue
+        symbol = PLANET_SYMBOLS[planet]
+        lat, lon = latlon_for_planet(planet, time)
+        x, y = body.from_latlon(lat, lon)
+        layer.draw(x, y, symbol, 227)
 
 
 def draw_apsides(layer, body, satellite):

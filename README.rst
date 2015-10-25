@@ -61,6 +61,8 @@ Requires Python 3.3+ and a terminal with 256 colors. A black background is highl
 	  -O, --observer 'LAT LON'  Space-separated latitude and longitude of an
 	                            observer; overrides IP-geolocation
 	  -p, --paused              Start paused
+	  -P, --planets PLANETS     Comma-separated list of celestial objects to draw
+	                            (e.g. 'sun,moon')
 	  -r, --orbit-res [/]N[+]   Set distance of orbit markers: 'N' means N
 	                            minutes, '/N' means 1/Nth of orbital period,
 	                            append a plus sign to interpolate in between
