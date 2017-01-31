@@ -17,16 +17,16 @@ PLANETS = {
 }
 
 PLANET_SYMBOLS = {
-    'jupiter': "J",
-    'mars': "A",
-    'mercury': "M",
-    'moon': "L",
-    'neptune': "N",
-    'pluto': "P",
-    'saturn': "C",
-    'sun': "S",
-    'uranus': "U",
-    'venus': "V",
+    'jupiter': "♃",
+    'mars': "♂",
+    'mercury': "☿",
+    'moon': "☽",
+    'neptune': "♆",
+    'pluto': "♇",
+    'saturn': "♄",
+    'sun': "☼",
+    'uranus': "⛢",
+    'venus': "♀",
 }
 
 
