@@ -75,9 +75,9 @@ def draw_grid(layer, body):
         for y in range(body.height):
             if body.map[x][y][3] is None:
                 if x in longitudes and y in latitudes:
-                    layer.draw(x, y, "+", 234)
+                    layer.draw(x, y, "┼", 234)
                 elif x in longitudes:
-                    layer.draw(x, y, "|", 234)
+                    layer.draw(x, y, "│", 234)
                 elif y in latitudes:
                     layer.draw(x, y, "─", 234)
 
@@ -214,11 +214,11 @@ def draw_info(
         text.padded_lines = []
         for line in text:
             if line == "---":
-                text.padded_lines.append("┣" + "─" * (longest_line+2) + "┫")
+                text.padded_lines.append("├" + "─" * (longest_line+2) + "┤")
             else:
-                text.padded_lines.append("┃ " + line.ljust(longest_line+1) + "┃")
-        text.padded_lines.insert(0, "┏" + "─" * (longest_line+2) + "┓")
-        text.padded_lines.append("┗" + "─" * (longest_line+2) + "┛")
+                text.padded_lines.append("│ " + line.ljust(longest_line+1) + "│")
+        text.padded_lines.insert(0, "╭" + "─" * (longest_line+2) + "╮")
+        text.padded_lines.append("╰" + "─" * (longest_line+2) + "╯")
 
         if text.left:
             text.x = 2
@@ -454,7 +454,7 @@ def draw_crosshair(layer, body, satellite):
             layer.draw(i, y, "─", 235)
     for i in range(body.height):
         if body.map[x][i][3] is None:
-            layer.draw(x, i, "|", 235)
+            layer.draw(x, i, "│", 235)
 
 
 def draw_location(layer, body, lat, lon):
