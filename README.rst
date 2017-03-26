@@ -11,6 +11,7 @@ Requires Python 3.3+ and a terminal with 256 colors. A black background is highl
 .. code-block::
 
 	pip3 install termtrack
+	termtrack -figmntxo 1 iss
 
 .. code-block::
 
