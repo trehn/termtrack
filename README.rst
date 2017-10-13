@@ -79,10 +79,6 @@ Credit goes to `vain/asciiworld <https://github.com/vain/asciiworld>`_ for inspi
 
 ------------------------------------------------------------------------
 
-.. image:: http://img.shields.io/pypi/dm/termtrack.svg
-    :target: https://pypi.python.org/pypi/termtrack/
-    :alt: Downloads per month
-
 .. image:: http://img.shields.io/pypi/v/termtrack.svg
     :target: https://pypi.python.org/pypi/termtrack/
     :alt: Latest Version
