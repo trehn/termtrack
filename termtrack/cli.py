@@ -373,7 +373,7 @@ def main(**kwargs):
     """
     \b
     Shows a world map tracking SATELLITE. Valid values for SATELLITE are
-    numbers from http://www.celestrak.com/NORAD/elements/master.asp (for
+    numbers from http://www.celestrak.com/NORAD/elements/master.php (for
     your convenience, a number of aliases have been provided).
     \b
     Example satellite aliases (find more with --aliases):
