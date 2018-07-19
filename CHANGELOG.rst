@@ -1,3 +1,11 @@
+0.7.1
+=====
+
+2018-07-19
+
+* fixed retrieval of TLE data after changes to celestrak.com API
+
+
 0.7.0
 =====
 
