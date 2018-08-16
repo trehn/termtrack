@@ -34,7 +34,7 @@ class Body(object):
             map_cache_key = "{}_{}x{}".format(self.NAME, self.width, self.height)
             if map_cache_key in map_cache:
                 self.map = map_cache[map_cache_key]
-                raise StopIteration()
+                return
             progress = 0.0
             empty_line = [None for i in range(self.height)]
             self.map = [copy(empty_line) for i in range(self.width)]
