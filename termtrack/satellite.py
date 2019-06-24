@@ -15,9 +15,6 @@ ALIASES = {
     'qzs-1': 37158,
     'qzs1': 37158,
     'smap': 40376,
-    'tiangong': 37820,
-    'tiangong-1': 37820,
-    'tiangong1': 37820,
 }
 EARTH_FLATTENING_COEFFICIENT = 0.003352891869237217
 EARTH_RADIUS = 6378135

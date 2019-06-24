@@ -24,7 +24,6 @@ Requires Python 3.3+ and a terminal with 256 colors. A black background is highl
 	  Example satellite aliases (find more with --aliases):
 	      hubble          Hubble Space Telescope
 	      iss             International Space Station
-	      tiangong        Tiangong-1 (Chinese space station)
 
 	  Hotkeys:
 	      a       Toggle apsides markers

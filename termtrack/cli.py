@@ -379,7 +379,6 @@ def main(**kwargs):
     Example satellite aliases (find more with --aliases):
     \thubble\t\tHubble Space Telescope
     \tiss\t\tInternational Space Station
-    \ttiangong\tTiangong-1 (Chinese space station)
     \b
     Hotkeys:
     \ta\tToggle apsides markers
