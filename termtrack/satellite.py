@@ -84,6 +84,8 @@ class EarthSatellite(object):
             number = ALIASES.get(number, number)
             raw_html = get("http://www.celestrak.com/satcat/tle.php?CATNR={}".format(number)).text
             tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
+            if tle == ["No TLE found"]:
+                raise ValueError("Unable to find TLE for {}".format(number))
         else:
             raise ValueError("No SATCAT number or TLE file provided")
         self._satellite = ephem.readtle(*tle)
