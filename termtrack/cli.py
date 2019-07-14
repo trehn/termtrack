@@ -119,9 +119,9 @@ def render(
         observer_latitude = None
         observer_longitude = None
         if me and observer is None:
-            location_data = get("http://ip-api.com/json").json()
-            observer_latitude = location_data['lat']
-            observer_longitude = location_data['lon']
+            location_data = get("https://v4.ifconfig.co/json").json()
+            observer_latitude = location_data['latitude']
+            observer_longitude = location_data['longitude']
         if observer is not None:
             obs_latlon = observer.split()
             observer_latitude = float(obs_latlon[0])
