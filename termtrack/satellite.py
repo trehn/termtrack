@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from math import asin, atan2, cos, degrees, pi, radians, sin, sqrt
-import re
 
 import ephem
 from requests import get
@@ -20,7 +19,6 @@ EARTH_FLATTENING_COEFFICIENT = 0.003352891869237217
 EARTH_RADIUS = 6378135
 EARTH_SGP = 3.986004418e+14  # Standard gravitational parameter
 KEPLER_ACCURACY = 1e-6
-TLE_REGEX = re.compile("pre>(.*)</pre", flags=re.DOTALL)
 
 
 def earth_radius_at_latitude(latitude):
@@ -79,8 +77,9 @@ class EarthSatellite(object):
                 tle = f.read().strip().split("\n")
         elif number is not None:
             number = ALIASES.get(number, number)
-            raw_html = get("http://www.celestrak.com/satcat/tle.php?CATNR={}".format(number)).text
-            tle = TLE_REGEX.search(raw_html).group(1).strip().split("\n")
+            tle = get(
+                "http://www.celestrak.com/satcat/tle.php?CATNR={}".format(number)
+            ).text.strip().split("\n")
             if tle == ["No TLE found"]:
                 raise ValueError("Unable to find TLE for {}".format(number))
         else:
