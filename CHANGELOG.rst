@@ -1,3 +1,11 @@
+0.7.3
+=====
+
+2019-12-24
+
+* fixed TLE download from CelesTrak
+
+
 0.7.2
 =====
 
