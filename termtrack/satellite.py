@@ -78,7 +78,7 @@ class EarthSatellite(object):
         elif number is not None:
             number = ALIASES.get(number, number)
             tle = get(
-                "http://www.celestrak.com/satcat/tle.php?CATNR={}".format(number)
+                "http://www.celestrak.com/NORAD/elements/gp.php?CATNR={}".format(number)
             ).text.strip().split("\n")
             if tle == ["No TLE found"]:
                 raise ValueError("Unable to find TLE for {}".format(number))
