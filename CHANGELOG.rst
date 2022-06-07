@@ -1,3 +1,11 @@
+0.7.4
+=====
+
+2022-06-07
+
+* fixed TLE download from CelesTrak
+
+
 0.7.3
 =====
 
