@@ -1,9 +1,10 @@
+import argparse
 import curses
+import sys
 from datetime import datetime, timedelta
 from queue import Empty
 from threading import Thread
 
-import click
 from requests import get
 
 from . import VERSION_STRING
@@ -100,7 +101,6 @@ def render(
         satellite=None,
         tle=None,
         topo=False,
-        **kwargs
 ):
     curses_lock, input_queue, quit_event = setup(stdscr)
     input_thread = Thread(
@@ -304,99 +304,189 @@ def render(
         input_thread.join()
 
 
-def print_aliases(ctx, param, value):
-    if not value or ctx.resilient_parsing:
-        return
-    for alias in sorted(ALIASES.keys()):
-        click.echo("{}: {}".format(alias, ALIASES[alias]))
-    ctx.exit()
+DESCRIPTION = """\
+Shows a world map tracking SATELLITE. Valid values for SATELLITE are
+numbers from http://www.celestrak.com/NORAD/elements/master.php (for
+your convenience, a number of aliases have been provided).
+
+Example satellite aliases (find more with --aliases):
+    hubble          Hubble Space Telescope
+    iss             International Space Station
+"""
+
+EPILOG = """\
+Hotkeys:
+    a       Toggle apsides markers
+    c       Toggle next-orbit coverage overlay
+    d       Toggle ascent/descent markers
+    f       Toggle footprint (satellite horizon)
+    g       Toggle latitude/longitude grid
+    i       Toggle info panels
+    n       Toggle night shading
+    o       Cycle through drawing 0-3 next orbits
+    p       Pause/resume
+    q       Quit
+    r       Reset plotted time to current
+    t       Toggle topography
+    x       Toggle crosshair
+    left    Small step back in time
+    right   Small step forward in time
+    down    Large step back in time
+    up      Large step forward in time
+"""
 
 
-def print_version(ctx, param, value):
-    if not value or ctx.resilient_parsing:
-        return
-    click.echo(VERSION_STRING)
-    ctx.exit()
+def main():
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION,
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        'satellite',
+        nargs='?',
+        default=None,
+        help="satellite name or NORAD catalog number",
+    )
+    parser.add_argument(
+        '--aliases',
+        action='store_true',
+        help="show all satellite aliases and exit",
+    )
+    parser.add_argument(
+        '--apsides',
+        action='store_true',
+        help="draw apoapsis and periapsis markers",
+    )
+    parser.add_argument(
+        '-b', '--body',
+        default='earth',
+        metavar='BODY',
+        help="which celestial body to draw: Earth, Moon or Mars (default: Earth)",
+    )
+    parser.add_argument(
+        '-c', '--coverage',
+        action='store_true',
+        help="show next-orbit coverage overlay",
+    )
+    parser.add_argument(
+        '-f', '--footprint',
+        action='store_true',
+        help="draw satellite footprint/horizon",
+    )
+    parser.add_argument(
+        '--fps',
+        type=int,
+        default=1,
+        metavar='N',
+        help="frames per second (default: 1)",
+    )
+    parser.add_argument(
+        '-g', '--grid',
+        action='store_true',
+        help="draw latitude/longitude grid",
+    )
+    parser.add_argument(
+        '-i', '--info',
+        action='store_true',
+        help="show info panels",
+    )
+    parser.add_argument(
+        '-m', '--me',
+        action='store_true',
+        help="auto-detect your location as observer",
+    )
+    parser.add_argument(
+        '-n', '--night',
+        action='store_true',
+        help="shade night side",
+    )
+    parser.add_argument(
+        '-o', '--orbits',
+        type=int,
+        default=0,
+        metavar='N',
+        help="draw this many orbits ahead of the satellite",
+    )
+    parser.add_argument(
+        '--orbit-ascdesc',
+        action='store_true',
+        help="draw orbits with ascent/descent markers",
+    )
+    parser.add_argument(
+        '-O', '--observer',
+        default=None,
+        metavar="'LAT LON'",
+        help="space-separated latitude and longitude of an observer; overrides IP-geolocation",
+    )
+    parser.add_argument(
+        '-p', '--paused',
+        action='store_true',
+        help="start paused",
+    )
+    parser.add_argument(
+        '-P', '--planets',
+        default='',
+        metavar='PLANETS',
+        help="comma-separated list of celestial objects to draw (e.g. 'sun,moon')",
+    )
+    parser.add_argument(
+        '-r', '--orbit-res',
+        default='/70',
+        metavar='[/]N[+]',
+        help="set distance of orbit markers: 'N' means N minutes, '/N' means "
+             "1/Nth of orbital period, append a plus sign to interpolate in "
+             "between markers (default: /70)",
+    )
+    parser.add_argument(
+        '-t', '--topo',
+        action='store_true',
+        help="enable coloring of topographical features",
+    )
+    parser.add_argument(
+        '--tle',
+        default=None,
+        metavar='FILE',
+        help="read TLE data from FILE instead of downloading it "
+             "(SATELLITE will have no effect and can be omitted)",
+    )
+    parser.add_argument(
+        '-x', '--crosshair',
+        action='store_true',
+        help="draw crosshair around satellite location",
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=VERSION_STRING,
+    )
 
+    args = parser.parse_args()
 
-@click.command()
-@click.option("--aliases", is_flag=True, callback=print_aliases,
-              expose_value=False, is_eager=True,
-              help="Show all satellite aliases and exit")
-@click.option("--apsides", is_flag=True, default=False,
-              help="Draw apoapsis and periapsis markers")
-@click.option("-b", "--body", default="earth", metavar="BODY",
-              help="Which celestial body to draw: Earth, Moon or Mars "
-                   "(defaults to Earth)")
-@click.option("-c", "--coverage", is_flag=True, default=False,
-              help="Show next-orbit coverage overlay")
-@click.option("-f", "--footprint", is_flag=True, default=False,
-              help="Draw satellite footprint/horizon")
-@click.option("--fps", default=1, metavar="N",
-              help="Frames per second (defaults to 1)")
-@click.option("-g", "--grid", is_flag=True, default=False,
-              help="Draw latitude/longitude grid")
-@click.option("-i", "--info", is_flag=True, default=False,
-              help="Show info panels")
-@click.option("-m", "--me", is_flag=True, default=False,
-              help="Auto-detect your location as observer")
-@click.option("-n", "--night", is_flag=True, default=False,
-              help="Shade night side")
-@click.option("-o", "--orbits", default=0, metavar="N",
-              help="Draw this many orbits ahead of the satellite")
-@click.option("--orbit-ascdesc", is_flag=True, default=False,
-              help="Draw orbits with ascent/descent markers")
-@click.option("-O", "--observer", default=None, metavar="'LAT LON'",
-              help="Space-separated latitude and longitude of an "
-                   "observer; overrides IP-geolocation")
-@click.option("-p", "--paused", is_flag=True, default=False,
-              help="Start paused")
-@click.option("-P", "--planets", default="", metavar="PLANETS",
-              help="Comma-separated list of celestial objects to draw "
-                   "(e.g. 'sun,moon')")
-@click.option("-r", "--orbit-res", default="/70", metavar="[/]N[+]",
-              help="Set distance of orbit markers: 'N' means N minutes, "
-                   "'/N' means 1/Nth of orbital period, append a plus "
-                   "sign to interpolate in between markers (defaults to /70)")
-@click.option("-t", "--topo", is_flag=True, default=False,
-              help="Enable coloring of topographical features")
-@click.option("--tle", default=None, metavar="FILE",
-              help="read TLE data from FILE instead of downloading it "
-                   "(SATELLITE will have no effect and can be omitted)")
-@click.option("-x", "--crosshair", is_flag=True, default=False,
-              help="Draw crosshair around satellite location")
-@click.option("--version", is_flag=True, callback=print_version,
-              expose_value=False, is_eager=True,
-              help="Show version and exit")
-@click.argument('satellite', required=False)
-def main(**kwargs):
-    """
-    \b
-    Shows a world map tracking SATELLITE. Valid values for SATELLITE are
-    numbers from http://www.celestrak.com/NORAD/elements/master.php (for
-    your convenience, a number of aliases have been provided).
-    \b
-    Example satellite aliases (find more with --aliases):
-    \thubble\t\tHubble Space Telescope
-    \tiss\t\tInternational Space Station
-    \b
-    Hotkeys:
-    \ta\tToggle apsides markers
-    \tc\tToggle next-orbit coverage overlay
-    \td\tToggle ascent/descent markers
-    \tf\tToggle footprint (satellite horizon)
-    \tg\tToggle latitude/longitude grid
-    \ti\tToggle info panels
-    \tn\tToggle night shading
-    \to\tCycle through drawing 0-3 next orbits
-    \tp\tPause/resume
-    \tq\tQuit
-    \tr\tReset plotted time to current
-    \tt\tToggle topography
-    \tx\tToggle crosshair
-    \tleft\tSmall step back in time
-    \tright\tSmall step forward in time
-    \tdown\tLarge step back in time
-    \tup\tLarge step forward in time
-    """
-    curses.wrapper(render, **kwargs)
+    if args.aliases:
+        for alias in sorted(ALIASES.keys()):
+            print("{}: {}".format(alias, ALIASES[alias]))
+        sys.exit(0)
+
+    curses.wrapper(
+        render,
+        apsides=args.apsides,
+        body=args.body,
+        coverage=args.coverage,
+        crosshair=args.crosshair,
+        footprint=args.footprint,
+        fps=args.fps,
+        grid=args.grid,
+        info=args.info,
+        me=args.me,
+        night=args.night,
+        observer=args.observer,
+        orbit_ascdesc=args.orbit_ascdesc,
+        orbit_res=args.orbit_res,
+        orbits=args.orbits,
+        paused=args.paused,
+        planets=args.planets,
+        satellite=args.satellite,
+        tle=args.tle,
+        topo=args.topo,
+    )
