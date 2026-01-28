@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+
+2026-01-28
+
+- dependency updates
+- improved CelesTrak error handling
+
 ## 0.7.4
 
 2022-06-07

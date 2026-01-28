@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "termtrack"
-version = "0.7.4"
+version = "0.8.0"
 description = "Track Earth-orbiting satellites from your terminal"
 readme = "README.md"
 license = "GPL-3.0-only"
