@@ -12,7 +12,7 @@ from .utils.geometry import latlon_to_spherical, point_in_poly, spherical_to_car
 MAP_CACHE = "~/.termtrack_map_cache"
 
 
-class Body(object):
+class Body:
     def __init__(self, width, height):
         self.height = height
         self.width = width

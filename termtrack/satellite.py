@@ -65,7 +65,7 @@ def orbital_velocity(semi_major_axis, altitude, latitude):
     )
 
 
-class EarthSatellite(object):
+class EarthSatellite:
     def __init__(
         self,
         number,

@@ -12,7 +12,7 @@ def pixel_from_layers(x, y, layers):
     return " ", 1
 
 
-class Layer(object):
+class Layer:
     def __init__(self, update_callback, update_timeout=0):
         self.content = {}
         self.hidden = False
