@@ -1,2 +1,3 @@
-VERSION = (0, 7, 4)
-VERSION_STRING = ".".join([str(v) for v in VERSION])
+from importlib.metadata import version
+
+VERSION_STRING = version("termtrack")
