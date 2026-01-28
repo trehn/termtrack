@@ -4,7 +4,7 @@ Track orbiting objects (such as the International Space Station) in your termina
 
 ![Screenshot](https://raw.githubusercontent.com/trehn/termtrack/master/screenshot.png)
 
-Requires Python 3.3+ and a terminal with 256 colors. A black background is highly recommended.
+Requires Python 3.10+ and a terminal with 256 colors. A black background is highly recommended.
 
 ```
 pip install termtrack
@@ -88,9 +88,9 @@ To draw the map, TermTrack will look at a shapefile from [Natural Earth](http://
 
 For Mars and the Moon there is no shapefile to read and the entire area is colored according to similar JPEG color maps.
 
-Night shading for each pixel is done by looking at the Sun's elevation (as computed by [pyephem](http://rhodesmill.org/pyephem/)) and shifting the color of the pixel towards blue accordingly. Twilight starts when the Sun is 18° below the horizon ([astronomical twilight](https://en.wikipedia.org/wiki/Twilight#Astronomical_twilight)) and ends when it has risen to 0°.
+Night shading for each pixel is done by looking at the Sun's elevation (as computed by [skyfield](https://rhodesmill.org/skyfield/)) and shifting the color of the pixel towards blue accordingly. Twilight starts when the Sun is 18° below the horizon ([astronomical twilight](https://en.wikipedia.org/wiki/Twilight#Astronomical_twilight)) and ends when it has risen to 0°.
 
-Satellite locations are derived from [TLE](https://en.wikipedia.org/wiki/Two-line_element_set) data downloaded from [CelesTrak](https://celestrak.com/). The data is fed into pyephem where the current position of the satellite is computed using [SGP4](https://en.wikipedia.org/wiki/Simplified_perturbations_models). Most of the data you see in the info panels is provided by pyephem, but the apsides' locations as well as the satellite footprint outline are computed by TermTrack itself.
+Satellite locations are derived from [TLE](https://en.wikipedia.org/wiki/Two-line_element_set) data downloaded from [CelesTrak](https://celestrak.com/). The data is fed into skyfield where the current position of the satellite is computed using [SGP4](https://en.wikipedia.org/wiki/Simplified_perturbations_models). Most of the data you see in the info panels is provided by skyfield, but the apsides' locations as well as the satellite footprint outline are computed by TermTrack itself.
 
 ## Known Issues
 
