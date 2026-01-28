@@ -25,9 +25,9 @@ classifiers = [
 requires-python = ">=3.3"
 dependencies = [
     "Pillow>=2.7.0",
-    "pyephem>=3.7.5.0",
     "pyshp>=1.2.1",
     "requests>=2.0.0",
+    "skyfield>=1.45",
 ]
 
 [project.urls]
@@ -43,6 +43,7 @@ include = ["termtrack*"]
 
 [tool.setuptools.package-data]
 termtrack = [
+    "data/de421.bsp",
     "data/earth.jpg",
     "data/mars.jpg",
     "data/moon.jpg",

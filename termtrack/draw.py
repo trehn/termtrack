@@ -1,7 +1,5 @@
 from datetime import timedelta
-from math import acos, cos, degrees, radians, sin
-
-import ephem
+from math import acos, cos, degrees, pi, radians, sin
 
 from .planets import PLANET_SYMBOLS, latlon_for_planet
 from .satellite import earth_radius_at_latitude
@@ -17,6 +15,9 @@ from .utils.text import format_seconds
 
 GRID_LATITUDES = (60, 30, 0, -30, -60)
 GRID_LONGITUDES = (150, 120, 90, 60, 30, 0, -30, -60, -90, -120, -150)
+
+HALF_PI = pi / 2
+ASTRO_TWILIGHT = radians(-18)
 
 
 class InfoPanel(list):
@@ -194,14 +195,14 @@ def draw_info(
                 text_observer.append("AOS:")
                 text_observer.append("  {}".format(
                     format_seconds((
-                        satellite.acquisition_of_signal.datetime() - time
+                        satellite.acquisition_of_signal - time
                     ).total_seconds())
                 ))
                 text_observer.append("")
                 text_observer.append("LOS:")
                 text_observer.append("  {}".format(
                     format_seconds((
-                        satellite.loss_of_signal.datetime() - time
+                        satellite.loss_of_signal - time
                     ).total_seconds())
                 ))
         text_observer.top = True
@@ -235,20 +236,29 @@ def draw_info(
 
 
 def draw_map(layer, body, time, night=True, topo=True):
+    if night:
+        sun_lat, sun_lon = latlon_for_planet('sun', time)
+        sun_lat_rad = radians(sun_lat)
+        sun_lon_rad = radians(sun_lon)
+        cos_sun_lat = cos(sun_lat_rad)
+        sin_sun_lat = sin(sun_lat_rad)
+
     for x in range(body.width):
         for y in range(body.height):
             if night:
-                sun = ephem.Sun()
-                obs = ephem.Observer()
-                obs.pressure = 0
                 lat, lon = body.to_latlon(x, y)
-                obs.lat = "{:.8f}".format(lat)
-                obs.lon = "{:.8f}".format(lon)
-                obs.date = time
-                sun.compute(obs)
-                # astronomical twilight starts at -18°
-                # -0.3141592 = radians(-18)
-                night_factor = max(min(sun.alt, 0), -0.3141592) / -0.3141592
+                lat_rad = radians(lat)
+                lon_rad = radians(lon)
+
+                # calculate angular distance from sub-solar point using spherical law of cosines
+                cos_angular_dist = (
+                    sin(lat_rad) * sin_sun_lat +
+                    cos(lat_rad) * cos_sun_lat * cos(lon_rad - sun_lon_rad)
+                )
+                cos_angular_dist = max(-1.0, min(1.0, cos_angular_dist))
+                angular_dist = acos(cos_angular_dist)
+                sun_alt = HALF_PI - angular_dist
+                night_factor = max(min(sun_alt, 0), ASTRO_TWILIGHT) / ASTRO_TWILIGHT
             else:
                 night_factor = -1
 

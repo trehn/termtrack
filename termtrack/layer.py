@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def pixel_from_layers(x, y, layers):
@@ -31,11 +31,11 @@ class Layer(object):
             self.hidden or
             (self.last_updated and (
                 self.update_timeout is None or
-                datetime.now() - self.last_updated < self.update_timeout
+                datetime.now(timezone.utc) - self.last_updated < self.update_timeout
             ))
         ):
             return
 
-        self.last_updated = datetime.now()
+        self.last_updated = datetime.now(timezone.utc)
         self.content = {}
         self.update_callback(self, *args, **kwargs)

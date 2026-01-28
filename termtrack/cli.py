@@ -1,7 +1,7 @@
 import argparse
 import curses
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from queue import Empty
 from threading import Thread
 
@@ -128,11 +128,11 @@ def render(
             observer_longitude = float(obs_latlon[1])
 
         time_offset = timedelta(0)
-        time = datetime.utcnow() + time_offset
+        time = datetime.now(timezone.utc) + time_offset
         force_redraw = False
 
         if paused is True:
-            paused = datetime.utcnow()
+            paused = datetime.now(timezone.utc)
             force_redraw = True
 
         if satellite is None and tle is None:
@@ -188,7 +188,7 @@ def render(
 
             draw_start = datetime.now()
             if not paused:
-                time = datetime.utcnow() + time_offset
+                time = datetime.now(timezone.utc) + time_offset
             if force_redraw:
                 for layer in layers:
                     layer.last_updated = None
@@ -206,6 +206,7 @@ def render(
                 planet_layer.update(body, time, planets)
 
                 if satellite_obj is not None:
+                    satellite_obj.compute(time)
                     apsides_layer.update(body, satellite_obj)
                     coverage_layer.update(body, satellite_obj, time)
                     crosshair_layer.update(body, satellite_obj)
@@ -219,7 +220,6 @@ def render(
                         orbit_resolution=orbit_res,
                     )
                     satellite_layer.update(body, satellite_obj)
-                    satellite_obj.compute(time)
 
                 with curses_lock:
                     redraw(stdscr, body, layers)
@@ -254,10 +254,10 @@ def render(
                     time_offset -= satellite_obj.orbital_period / 2
             elif input_action == INPUT_TIME_PAUSE:
                 if paused:
-                    time_offset -= datetime.utcnow() - paused
+                    time_offset -= datetime.now(timezone.utc) - paused
                     paused = False
                 else:
-                    paused = datetime.utcnow()
+                    paused = datetime.now(timezone.utc)
             elif input_action == INPUT_TIME_PLUS_SHORT:
                 if satellite_obj is None:
                     time_offset += timedelta(minutes=30)
@@ -271,7 +271,7 @@ def render(
             elif input_action == INPUT_TIME_RESET:
                 time_offset = timedelta(0)
                 if paused:
-                    paused = time = datetime.utcnow()
+                    paused = time = datetime.now(timezone.utc)
             elif input_action == INPUT_TOGGLE_COVERAGE:
                 coverage_layer.hidden = not coverage_layer.hidden
                 coverage_layer.last_updated = None

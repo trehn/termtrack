@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
 from math import asin, atan2, cos, degrees, pi, radians, sin, sqrt
 
-import ephem
 from requests import get
+from skyfield.api import EarthSatellite as SkyfieldSatellite, wgs84
+
+from . import VERSION_STRING
+from .planets import TIMESCALE
 
 
 ALIASES = {
@@ -77,46 +80,74 @@ class EarthSatellite(object):
                 tle = f.read().strip().split("\n")
         elif number is not None:
             number = ALIASES.get(number, number)
-            tle = get(
-                "http://www.celestrak.com/NORAD/elements/gp.php?CATNR={}".format(number)
-            ).text.strip().split("\n")
+            response = get(
+                f"https://celestrak.org/NORAD/elements/gp.php?CATNR={number}&FORMAT=TLE",
+                headers={"User-Agent": f"termtrack/{VERSION_STRING}"},
+            )
+            if response.status_code == 403:
+                raise ValueError(
+                    "CelesTrak returned 403 (probably rate limit). "
+                    "Try again later or use --tle"
+                )
+            response.raise_for_status()
+            tle = response.text.strip().split("\n")
             if tle == ["No TLE found"]:
-                raise ValueError("Unable to find TLE for {}".format(number))
+                raise ValueError(f"Unable to find TLE for {number}")
         else:
             raise ValueError("No SATCAT number or TLE file provided")
-        self._satellite = ephem.readtle(*tle)
-        self.argument_of_periapsis = float(self._satellite._ap.norm)
-        self.eccentricity = self._satellite._e
-        self.epoch = self._satellite._epoch.datetime()
-        self.inclination = float(self._satellite._inc.norm)
-        self.mean_anomaly_at_epoch = float(self._satellite._M.norm)
-        self.mean_motion_revs_per_day = self._satellite._n
+
+        if len(tle) < 3:
+            raise ValueError(f"Invalid TLE format: expected 3 lines, got {len(tle)}")
         self.name = tle[0].strip()
-        self.observer_elevation = observer_elevation
-        self.observer_latitude = observer_latitude
-        self.observer_longitude = observer_longitude
+        self._satellite = SkyfieldSatellite(tle[1], tle[2], self.name, TIMESCALE)
+
+        model = self._satellite.model
+        if model.no_kozai == 0:
+            raise ValueError("Invalid TLE: mean motion is zero")
+
+        self.argument_of_periapsis = model.argpo
+        self.eccentricity = model.ecco
+        self.inclination = model.inclo
+        self.mean_anomaly_at_epoch = model.mo
+        self.right_ascension_of_ascending_node = model.nodeo
+
+        # mean motion: model.no_kozai is in radians per minute,
+        # convert to revolutions per day for orbital period
+        self.mean_motion_revs_per_day = model.no_kozai * 1440 / (2 * pi)
         self.orbital_period = timedelta(days=1) / self.mean_motion_revs_per_day
         self.mean_motion = 2 * pi / self.orbital_period.total_seconds()
+
+        self.epoch = self._satellite.epoch.utc_datetime()
+
         self.apoapsis_latitude = degrees(asin(
             sin(self.argument_of_periapsis + pi) * sin(self.inclination)
         ))
         self.periapsis_latitude = degrees(asin(
             sin(self.argument_of_periapsis) * sin(self.inclination)
         ))
-        self.right_ascension_of_ascending_node = float(self._satellite._raan.norm)
         self.semi_major_axis = semi_major_axis(self.mean_motion)
         self.apoapsis_altitude = self.semi_major_axis * (1 + self.eccentricity) - \
                                  earth_radius_at_latitude(self.apoapsis_latitude)
         self.periapsis_altitude = self.semi_major_axis * (1 - self.eccentricity) - \
                                   earth_radius_at_latitude(self.periapsis_latitude)
+
+        self.observer_elevation = observer_elevation
+        self.observer_latitude = observer_latitude
+        self.observer_longitude = observer_longitude
+
         self.compute(time)
 
     def compute(self, time, plus_seconds=0):
         target_time = time + timedelta(seconds=plus_seconds)
-        self._satellite.compute(target_time)
-        self.altitude = self._satellite.elevation
-        self.latitude = degrees(self._satellite.sublat)
-        self.longitude = degrees(self._satellite.sublong)
+        time = TIMESCALE.from_datetime(target_time)
+
+        geocentric = self._satellite.at(time)
+        position = wgs84.geographic_position_of(geocentric)
+
+        self.altitude = position.elevation.m
+        self.latitude = position.latitude.degrees
+        self.longitude = position.longitude.degrees
+
         self.mean_anomaly = (
             self.mean_anomaly_at_epoch +
             self.mean_motion * (
@@ -138,25 +169,49 @@ class EarthSatellite(object):
                                                   self.time_since_apoapsis.total_seconds())
         self.velocity = orbital_velocity(self.semi_major_axis, self.altitude, self.latitude)
 
-        self._satellite.compute(target_time + self.time_to_periapsis)
-        self.periapsis_latitude = degrees(self._satellite.sublat)
-        self.periapsis_longitude = degrees(self._satellite.sublong)
+        periapsis_time = TIMESCALE.from_datetime(target_time + self.time_to_periapsis)
+        geocentric_periapsis = self._satellite.at(periapsis_time)
+        position_periapsis = wgs84.geographic_position_of(geocentric_periapsis)
+        self.periapsis_latitude = position_periapsis.latitude.degrees
+        self.periapsis_longitude = position_periapsis.longitude.degrees
 
-        self._satellite.compute(target_time + self.time_to_apoapsis)
-        self.apoapsis_latitude = degrees(self._satellite.sublat)
-        self.apoapsis_longitude = degrees(self._satellite.sublong)
+        apoapsis_time = TIMESCALE.from_datetime(target_time + self.time_to_apoapsis)
+        geocentric_apoapsis = self._satellite.at(apoapsis_time)
+        position_apoapsis = wgs84.geographic_position_of(geocentric_apoapsis)
+        self.apoapsis_latitude = position_apoapsis.latitude.degrees
+        self.apoapsis_longitude = position_apoapsis.longitude.degrees
 
         if (
             self.observer_latitude is not None and
             self.observer_longitude is not None
         ):
-            observer = ephem.Observer()
-            observer.date = target_time
-            observer.elevation = self.observer_elevation
-            observer.lat = str(self.observer_latitude)
-            observer.lon = str(self.observer_longitude)
-            self._satellite.compute(observer)
-            self.observer_azimuth = float(self._satellite.az.norm)
-            self.observer_altitude = float(self._satellite.alt.znorm)
-            self.acquisition_of_signal = self._satellite.rise_time
-            self.loss_of_signal = self._satellite.set_time
+            observer = wgs84.latlon(
+                self.observer_latitude,
+                self.observer_longitude,
+                elevation_m=self.observer_elevation,
+            )
+            difference = self._satellite - observer
+            topocentric = difference.at(time)
+            alt, az, _ = topocentric.altaz()
+
+            self.observer_azimuth = az.radians
+            self.observer_altitude = alt.radians
+
+            self.acquisition_of_signal = None
+            self.loss_of_signal = None
+
+            one_day_ahead = TIMESCALE.utc(
+                target_time.year, target_time.month, target_time.day,
+                target_time.hour + 24, target_time.minute, target_time.second,
+            )
+
+            for event_time, event_type in zip(*self._satellite.find_events(
+                observer,
+                time,
+                one_day_ahead,
+                altitude_degrees=0.0,
+            )):
+                if event_type == 0 and self.acquisition_of_signal is None:  # rise
+                    self.acquisition_of_signal = event_time.utc_datetime()
+                elif event_type == 2 and self.loss_of_signal is None:  # set
+                    self.loss_of_signal = event_time.utc_datetime()
