@@ -77,7 +77,7 @@ Credit goes to [vain/asciiworld](https://github.com/vain/asciiworld) for inspira
 ---
 
 [![Latest Version](http://img.shields.io/pypi/v/termtrack.svg)](https://pypi.python.org/pypi/termtrack/)
-[![Python 3.3+](http://img.shields.io/badge/Python-3.3+-green.svg)](https://pypi.python.org/pypi/termtrack/)
+[![Python 3.10+](http://img.shields.io/badge/Python-3.10+-green.svg)](https://pypi.python.org/pypi/termtrack/)
 [![License](http://img.shields.io/badge/License-GPLv3-red.svg)](https://pypi.python.org/pypi/termtrack/)
 
 ---
